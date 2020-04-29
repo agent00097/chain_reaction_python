@@ -243,13 +243,17 @@ def checkForRowAndColumn(row, column, player_turn):
     else:
         checkForTheFour(row, column, player_turn)
 
+done = False
+
 def checkForWin():
     if(len(playerOneAtoms) == 0):
         #Player 2 has won, end the game
         print("Player 2 won")
+        pygame.quit()
     elif(len(playerTwoAtoms) == 0):
         #Player 1 has won, end the game
         print("Player 1 won")
+        pygame.quit()
     else:
         #Game is still going on, continue
         return  
@@ -288,8 +292,6 @@ def checkForTheFour(row, column, player_turn):
         checkForRowAndColumn(row, column-1, player_turn)
 # Set title of screen
 pygame.display.set_caption("Game Window:")
-# Loop until the user clicks the close button.
-done = False
  
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
