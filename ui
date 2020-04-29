@@ -1,0 +1,57 @@
+# from tkinter import messagebox as tkMessageBox
+from tkinter import *
+import re
+def connect_server():  
+    root.destroy()
+def helloCallBack():
+
+    test=root.pack_slaves()
+    for i in test:
+        i.pack_forget()
+
+    def regChecker():
+        if ((not re.match('^[a-zA-Z0-9_]+$',v.get())) & (len(v.get())>8)):
+           alert_popup("test","Enter only alpha characters and maximum 8 characters",helloCallBack)
+        elif (not re.match('^[a-zA-Z0-9_]+$',v.get())):
+            alert_popup("test","Enter only alpha characters",helloCallBack)
+        elif (len(v.get())>8):
+            alert_popup("test","Enter maximum 8 characters",helloCallBack)
+        else:
+            ShowChoice()
+
+    def ShowChoice():
+        alert_popup("Test1","Player Name : "+str(v.get())+"\nClick ok to start the game",connect_server)
+       
+
+    l=Label(root, text="""Enter player name:""",justify = LEFT,padx = 20)
+    l.pack()
+    v=Entry(root,justify = RIGHT)
+    v.pack()
+
+    Button(root, text="OK", command=regChecker , width=10).pack()
+
+def alert_popup(title, message,func):
+   
+    """Generate a pop-up window for special messages."""
+    test=root.pack_slaves()
+    for i in test:
+        i.pack_forget()
+    root.title(title)
+    m = message
+    m += '\n'
+    w = Label(root, text=message, width=120, height=10)
+    w.pack()
+    b = Button(root, text="OK", command=func , width=10)
+    b.pack()
+      
+
+root=Tk()
+w = 400     # popup window width
+h = 200     # popup window height
+sw = root.winfo_screenwidth()
+sh = root.winfo_screenheight()
+x = (sw - w)/2
+y = (sh - h)/2
+root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+alert_popup("Title goes here..", "Connecting to server",helloCallBack)
+root.mainloop()
