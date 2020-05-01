@@ -1,20 +1,25 @@
-import pickle, re
+import pickle, re, time
 import sys
 import ssl
 from socket import *
 import threading
-from threading import Thread
+from threading import Thread, Lock
 
 ports=60000
 namereg=re.compile("^[a-zA-Z0-9]{0,20}$")
 LOCALHOST="127.0.0.1"
 server_port= 49999
+
 buffer=[]
+connbuffer={}
+
 userlist={}
 occupied_ports=[]
-threads=[]
+gamerooms=[]
 
-def client_port(portn, clientname):
+lock_buf=Lock()
+
+def client_specific_server(portn, clientname):
     lhost="127.0.0.1"
     port= portn
     print(clientname)
@@ -28,12 +33,76 @@ def client_port(portn, clientname):
     inputd = connssl.recv(1024)
     #data = pickle.loads(inputd)
 
-    sentence=pickle.dumps("Your are added in Buffer")
+    sentence=pickle.dumps("You are added in Buffer")
     connssl.send(sentence)
-    #break
+    lock_buf.acquire()
     buffer.append(clientname)
-    connssl.shutdown(SHUT_RDWR)
-    connssl.close()
+    connbuffer[clientname]=connssl
+    lock_buf.release()
+    #connbuffer[clientname].close()
+
+
+def room_creator():
+    while True:
+        time.sleep(5)
+        lock_buf.acquire()
+        n=len(buffer)
+        if n<2:
+            lock_buf.release()
+            for c in buffer:
+                data=pickle.dumps("Waiting for another user")
+                connbuffer[c].send(data)
+        elif n==0:
+            lock_buf.release()
+
+        else:
+            for i in range(0,n,2):
+                if i+1 != n:
+                    #rmo=Thread(target=player_game_room, args=(buffer[i],buffer[i+1],))
+                    rmo=player_game_room(buffer[i],buffer[i+1])
+                    print("Thread is running "+str(i)+" "+str(i+1)+" "+str(n))
+                    rmo.start()
+            if n%2==1:
+                last=buffer[n-1]
+                print("n2=1")
+                buffer.clear
+                del buffer[:]
+                buffer.append(last)
+            else:
+                buffer.clear
+                del buffer[:]
+                print("n2=1")
+
+            lock_buf.release()
+
+
+class player_game_room(Thread):
+
+    def __init__(self, play1, play2):
+        Thread.__init__(self)
+        self.play1=play1
+        self.play2=play2
+
+    def run(self):
+        player1=connbuffer[self.play1]
+        player2=connbuffer[self.play2]
+        data=pickle.dumps("Ready")
+        player1.send(data)
+        player2.send(data)
+        data=pickle.dumps(self.play1)
+        player2.send(data)
+        data=pickle.dumps(self.play2)
+        player1.send(data)
+    
+    #def cross_check_data()
+
+
+
+
+room=Thread(target=room_creator, args=())
+room.start()
+
+    
 
 
 
@@ -41,9 +110,6 @@ def client_port(portn, clientname):
 server = socket(AF_INET, SOCK_STREAM)
 server.bind((LOCALHOST, server_port))
 server.listen(50)
-
-
-
 
 while True:
     
@@ -89,7 +155,8 @@ while True:
         connstream.close()
         #connection.close()
         if data != -1:
-            t=Thread(target=client_port, args=(currport,currname,))
+
+            t=Thread(target=client_specific_server, args=(currport,currname,))
             t.start()
     except:
         print("Error")
