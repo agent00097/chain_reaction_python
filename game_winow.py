@@ -1,4 +1,6 @@
 import pygame
+from tkinter import *
+from tkinter import messagebox
 
 # Define some colors
 LIGHT_RED = (249, 200, 200)
@@ -249,11 +251,11 @@ def checkForWin():
     if(len(playerOneAtoms) == 0):
         #Player 2 has won, end the game
         print("Player 2 won")
-        pygame.quit()
+        done = True
     elif(len(playerTwoAtoms) == 0):
         #Player 1 has won, end the game
         print("Player 1 won")
-        pygame.quit()
+        done = True
     else:
         #Game is still going on, continue
         return  
@@ -303,6 +305,14 @@ turn = 0
 
 # -------- Main Program Loop -----------
 while not done:
+    if len(playerOneAtoms) == 0 and turn > 2:
+        Tk().wm_withdraw() #to hide the main window
+        messagebox.showinfo('Player Two Won','Player Two Won')
+        screen.quit()
+    if len(playerTwoAtoms) == 0 and turn > 2:
+        Tk().wm_withdraw() #to hide the main window
+        messagebox.showinfo('Player One Won','Player One Won')
+        screen.quit()
     for event in pygame.event.get():  # User did something
         if event.type == pygame.QUIT:  # If user clicked close
             done = True  # Flag that we are done so we exit this loop
@@ -366,8 +376,6 @@ while not done:
                         print("PlayerTwoAtoms are: ", playerTwoAtoms)
                     
 
-            if turn > 2:
-                checkForWin()
  
     # Set the screen background
     if turn % 2:
@@ -376,29 +384,30 @@ while not done:
         screen.fill(GREEN)
  
     # Draw the grid
+    
     for row in range(10):
         for column in range(10):
             color = WHITE
-            if grid[row][column] == 1:
-                if (turn % 2):
-                    color = LIGHT_RED
-                else:
-                    color = LIGHT_GREEN
-            if grid[row][column] == 2:
-                if (turn % 2):
-                    color = LIGHT_RED_2
-                else:
-                    color = LIGHT_GREEN_2
-            if grid[row][column] == 3:
-                if (turn % 2):
-                    color = RED
-                else:
-                    color = GREEN
-            if grid[row][column] == 4:
-                if (turn % 2):
-                    color = DARK_RED
-                else:
-                    color = DARK_GREEN
+            # if grid[row][column] == 1:
+            #     if (turn % 2):
+            #         color = LIGHT_RED
+            #     else:
+            #         color = LIGHT_GREEN
+            # if grid[row][column] == 2:
+            #     if (turn % 2):
+            #         color = LIGHT_RED_2
+            #     else:
+            #         color = LIGHT_GREEN_2
+            # if grid[row][column] == 3:
+            #     if (turn % 2):
+            #         color = RED
+            #     else:
+            #         color = GREEN
+            # if grid[row][column] == 4:
+            #     if (turn % 2):
+            #         color = DARK_RED
+            #     else:
+            #         color = DARK_GREEN
             pygame.draw.rect(screen,
                              color,
                              [(MARGIN + WIDTH) * column + MARGIN,
@@ -445,6 +454,7 @@ while not done:
                               (MARGIN + HEIGHT) * row + MARGIN,
                               WIDTH,
                               HEIGHT])
+
  
     # Limit to 60 frames per second
     clock.tick(60)

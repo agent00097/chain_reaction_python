@@ -19,6 +19,9 @@ gamerooms=[]
 
 lock_buf=Lock()
 
+#defining turn
+turn = 0
+
 def client_specific_server(portn, clientname):
     lhost="127.0.0.1"
     port= portn
@@ -87,6 +90,14 @@ class player_game_room(Thread):
         player1=connbuffer[self.play1]
         player2=connbuffer[self.play2]
         data=pickle.dumps("Ready")
+        #Assigning turns to the players
+        while True:
+            if turn % 2 == 0:
+                #player 1's turn
+                #1. Sending the signal to player one to play it's move
+            else:
+                #player 2's turn
+                #1. Sending the signal to player two to play it's move
         player1.send(data)
         player2.send(data)
         data=pickle.dumps(self.play1)
