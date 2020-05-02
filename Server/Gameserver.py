@@ -1,8 +1,6 @@
-import pickle, re, time
-import sys
-import ssl
+import pickle, re, time, random, sys, ssl
 from socket import *
-import threading
+
 from threading import Thread, Lock
 
 ports=60000
@@ -77,15 +75,47 @@ def room_creator():
 
 
 class player_game_room(Thread):
+    
+    playerOneAtoms = []
+    playerTwoAtoms = []
+    grid = []
+    for row in range(10):
+        grid.append([])
+        for column in range(10):
+            grid[row].append(0)  
+
 
     def __init__(self, play1, play2):
         Thread.__init__(self)
         self.play1=play1
         self.play2=play2
 
+    def check_grid(self, grid_data):
+        flag=1
+        for i in range(10):
+            for j in range(10):
+                if grid_data[i][j] > 3 or grid_data[i][j] < 0:
+                    flag=0
+
+        
+        if flag == 0:
+            return False
+        else:
+            return True
+        
+
+
     def run(self):
-        player1=connbuffer[self.play1]
-        player2=connbuffer[self.play2]
+
+        if random.randrange(1,3) == 1:
+            player1=connbuffer[self.play1]
+            player2=connbuffer[self.play2]
+            first=self.play1
+        else:
+            player2=connbuffer[self.play1]
+            player1=connbuffer[self.play2]
+            first=self.play2
+
         data=pickle.dumps("Ready")
         player1.send(data)
         player2.send(data)
@@ -93,6 +123,32 @@ class player_game_room(Thread):
         player2.send(data)
         data=pickle.dumps(self.play2)
         player1.send(data)
+        data=pickle.dumps(first)
+        player1.send(data)
+        player2.send(data)
+
+        count=1
+        while True: 
+            if count%2 == 1:
+                recvdata = player1.recv(1024)
+                recv_data=pickle.loads(recvdata)
+                #processing grid data
+                grid_data=recv_data["grid"]
+                flag=1
+                n=self.check_grid(grid_data)
+                flag=0
+                player2.send(recv_data)
+
+
+
+
+
+
+
+
+
+
+
     
     #def cross_check_data()
 
