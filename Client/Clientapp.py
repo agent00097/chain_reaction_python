@@ -539,7 +539,7 @@ while not done:
 #send
 # data = pickle.dumps(data_to_be_sent_in_whatever_format)
 # ssl_sock.send(data)
-#receive
+# receive
 # data_from_server = ssl_sock.recv(1024)
 # data = pickle.loads (data_from_server)
 

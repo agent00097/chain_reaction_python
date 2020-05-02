@@ -93,13 +93,20 @@ class player_game_room(Thread):
         self.play1=play1
         self.play2=play2
 
-    def check_grid(self, grid_data):
+    def check_grid(self, grid_data, atom1, atom2):
         flag=1
         for i in range(10):
             for j in range(10):
                 if grid_data[i][j] > 3 or grid_data[i][j] < 0:
                     flag=0
+        
+        for x in atom1:
+            if x[0]<0 or x[0]>9 or x[1]<0 or x[1]>9:
+                flag=0 
 
+        for x in atom2:
+            if x[0]<0 or x[0]>9 or x[1]<0 or x[1]>9:
+                flag=0
         
         if flag == 0:
             return False
@@ -126,6 +133,7 @@ class player_game_room(Thread):
                 #player 1's turn
                 #1. Sending the signal to player one to play it's move
             else:
+            
                 #player 2's turn
                 #1. Sending the signal to player two to play it's move
         player1.send(data)
@@ -141,14 +149,46 @@ class player_game_room(Thread):
         count=1
         while True: 
             if count%2 == 1:
+                player2.send(pickle.dumps(0))
+                player1.send(pickle.dumps(1))
                 recvdata = player1.recv(1024)
                 recv_data=pickle.loads(recvdata)
                 #processing grid data
                 grid_data=recv_data["grid"]
                 flag=1
-                n=self.check_grid(grid_data)
-                flag=0
-                player2.send(recv_data)
+                if not self.check_grid(grid_data, player1_atom, player2_atom):
+                    flag=0
+                
+                #add the function to cross check grid here 
+                if flag = 0:
+                    print("It's incorrect")
+                else:
+                    print("It is correct")
+                player2.send(recvdata)
+                #recvdata = player2.recv(1024)
+                #if pickle.loads(recvdata) ==1:
+            else:
+                player1.send(pickle.dumps(0))
+                player2.send(pickle.dumps(1))
+                recvdata = player2.recv(1024)
+                recv_data=pickle.loads(recvdata)
+                #processing grid data
+                grid_data=recv_data["grid"]
+                flag=1
+                if not self.check_grid(grid_data, player1_atom, player2_atom):
+                    flag=0
+                
+                #add the function to cross check grid here 
+                if flag = 0:
+                    print("It's incorrect")
+                else:
+                    print("It is correct")
+                player1.send(recvdata)
+
+
+
+
+
 
 
 
