@@ -1,6 +1,5 @@
 import pygame
 from tkinter import *
-from tkinter import messagebox
 
 # Define some colors
 LIGHT_RED = (249, 200, 200)
@@ -302,6 +301,36 @@ font=pygame.font.SysFont('arial', 40)
 text=font.render('@', True, (0, 0, 0)) 
 
 turn = 0
+
+for row in range(10):
+        for column in range(10):
+            color = WHITE
+            # if grid[row][column] == 1:
+            #     if (turn % 2):
+            #         color = LIGHT_RED
+            #     else:
+            #         color = LIGHT_GREEN
+            # if grid[row][column] == 2:
+            #     if (turn % 2):
+            #         color = LIGHT_RED_2
+            #     else:
+            #         color = LIGHT_GREEN_2
+            # if grid[row][column] == 3:
+            #     if (turn % 2):
+            #         color = RED
+            #     else:
+            #         color = GREEN
+            # if grid[row][column] == 4:
+            #     if (turn % 2):
+            #         color = DARK_RED
+            #     else:
+            #         color = DARK_GREEN
+            pygame.draw.rect(screen,
+                             color,
+                             [(MARGIN + WIDTH) * column + MARGIN,
+                              (MARGIN + HEIGHT) * row + MARGIN,
+                              WIDTH,
+                              HEIGHT])
 
 # -------- Main Program Loop -----------
 while not done:

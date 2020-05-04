@@ -17,8 +17,258 @@ gamerooms=[]
 
 lock_buf=Lock()
 
+playerOneAtoms = []
+playerTwoAtoms = []
+grid = []
+    
+for row in range(10):
+    grid.append([])
+    for column in range(10):
+        grid[row].append(0)  
+
+# This sets the WIDTH and HEIGHT of each grid location
+WIDTH = 40
+HEIGHT = 40
+ 
+# This sets the margin between each cell
+MARGIN = 5
+
 #defining turn
 turn = 0
+
+def deleteTheAtom(row, column):
+    if (row, column) in playerOneAtoms:
+        playerOneAtoms.remove(tuple([row, column]))
+    if (row, column) in playerTwoAtoms:
+        playerTwoAtoms.remove(tuple([row, column]))
+
+
+def checkForRowAndColumn(row, column, player_turn):
+    if (row == 0 and column == 0):
+        #We have to burst at two
+        if(grid[row][column] == 2):
+            grid[row][column] = 0
+            grid[row+1][column] += 1
+            deleteTheAtom(row+1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row+1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column]))
+            checkForRowAndColumn(row+1, column, player_turn)
+            grid[row][column+1] += 1
+            deleteTheAtom(row, column+1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column+1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column+1]))
+            checkForRowAndColumn(row, column+1, player_turn)
+
+    if (row == 9 and column == 0):
+        #We have to burst at two
+        if(grid[row][column] == 2):
+            grid[row][column] = 0
+            grid[row-1][column] += 1
+            deleteTheAtom(row-1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row-1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row-1, column]))
+            checkForRowAndColumn(row-1, column, player_turn)
+            grid[row][column+1] += 1
+            deleteTheAtom(row, column+1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column+1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column+1]))
+            checkForRowAndColumn(row, column+1, player_turn)
+
+    if (row == 0 and column == 9):
+        if(grid[row][column] == 2):
+            grid[row][column] = 0
+            grid[row+1][column] += 1
+            deleteTheAtom(row+1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row+1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column]))
+            checkForRowAndColumn(row+1, column, player_turn)
+            grid[row][column-1] += 1
+            deleteTheAtom(row, column-1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column-1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column-1]))
+            checkForRowAndColumn(row, column-1, player_turn)
+
+
+    if (row == 9 and column == 9):
+        if(grid[row][column] == 2):
+            grid[row][column] = 0
+            grid[row-1][column] += 1
+            deleteTheAtom(row-1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row-1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row-1, column]))
+            checkForRowAndColumn(row-1, column, player_turn)
+            grid[row][column-1] += 1
+            deleteTheAtom(row, column-1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column-1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column-1]))
+            checkForRowAndColumn(row, column-1, player_turn)
+
+    if (row == 0 and column >=1 and column <=8):
+        #We now check for three
+        if(grid[row][column] == 3):
+            grid[row][column] = 0
+            grid[row+1][column] += 1
+            deleteTheAtom(row+1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row+1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column]))
+            checkForRowAndColumn(row+1, column, player_turn)
+            grid[row][column+1] += 1
+            deleteTheAtom(row, column+1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column+1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column+1]))
+            checkForRowAndColumn(row, column+1, player_turn)
+            grid[row][column-1] += 1
+            deleteTheAtom(row, column-1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column-1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column-1]))
+            checkForRowAndColumn(row, column-1, player_turn)
+
+    if (row == 9 and column >=1 and column <=8):
+        if(grid[row][column] == 3):
+            grid[row][column] = 0
+            grid[row-1][column] += 1
+            deleteTheAtom(row-1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row-1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row-1, column]))
+            checkForRowAndColumn(row-1, column, player_turn)
+            grid[row][column+1] += 1
+            deleteTheAtom(row, column+1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column+1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column+1]))
+            checkForRowAndColumn(row, column+1, player_turn)
+            grid[row][column-1] += 1
+            deleteTheAtom(row, column-1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column-1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column-1]))
+            checkForRowAndColumn(row, column-1, player_turn)
+
+    if (column == 9 and row >=1 and row <=8):
+        if(grid[row][column] == 3):
+            grid[row][column] = 0
+            grid[row-1][column] += 1
+            deleteTheAtom(row-1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row-1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row-1, column]))
+            checkForRowAndColumn(row-1, column, player_turn)
+            grid[row+1][column] += 1
+            deleteTheAtom(row+1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row+1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column]))
+            checkForRowAndColumn(row+1, column, player_turn)
+            grid[row][column-1] += 1
+            deleteTheAtom(row, column-1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column-1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column-1]))
+            checkForRowAndColumn(row, column-1, player_turn)
+
+
+    if (column == 0 and row >=1 and row <=8):
+        if(grid[row][column] == 3):
+            grid[row][column] = 0
+            grid[row-1][column] += 1
+            deleteTheAtom(row-1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row-1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row-1, column]))
+            checkForRowAndColumn(row-1, column, player_turn)
+            grid[row+1][column] += 1
+            deleteTheAtom(row+1, column)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row+1, column]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row+1, column]))
+            checkForRowAndColumn(row+1, column, player_turn)
+            grid[row][column+1] += 1
+            deleteTheAtom(row, column+1)
+            if player_turn == 1:
+                playerOneAtoms.append(tuple([row, column+1]))
+            elif player_turn == 2:
+                playerTwoAtoms.append(tuple([row, column+1]))
+            checkForRowAndColumn(row, column+1, player_turn)
+
+    else:
+        checkForTheFour(row, column, player_turn)
+
+done = False
+
+def checkForWin():
+    if(len(playerOneAtoms) == 0):
+        #Player 2 has won, end the game
+        print("Player 2 won")
+    elif(len(playerTwoAtoms) == 0):
+        #Player 1 has won, end the game
+        print("Player 1 won")
+    else:
+        #Game is still going on, continue
+        return  
+
+
+def checkForTheFour(row, column, player_turn):
+    if(grid[row][column] == 4):
+        grid[row][column] = 0
+        grid[row+1][column] += 1
+        deleteTheAtom(row+1, column)
+        if player_turn == 1:
+            playerOneAtoms.append(tuple([row+1, column]))
+        elif player_turn == 2:
+            playerTwoAtoms.append(tuple([row+1, column]))
+        checkForRowAndColumn(row+1, column, player_turn)
+        grid[row][column+1] += 1
+        deleteTheAtom(row, column+1)
+        if player_turn == 1:
+            playerOneAtoms.append(tuple([row, column+1]))
+        elif player_turn == 2:
+            playerTwoAtoms.append(tuple([row, column+1]))
+        checkForRowAndColumn(row, column+1, player_turn)
+        grid[row-1][column] += 1
+        deleteTheAtom(row-1, column)
+        if player_turn == 1:
+            playerOneAtoms.append(tuple([row-1, column]))
+        elif player_turn == 2:
+            playerTwoAtoms.append(tuple([row-1, column]))  
+        checkForTheFour(row-1, column, player_turn)
+        grid[row][column-1] += 1
+        deleteTheAtom(row, column-1)
+        if player_turn == 1:
+            playerOneAtoms.append(tuple([row, column-1]))
+        elif player_turn == 2:
+            playerTwoAtoms.append(tuple([row, column-1]))
+        checkForRowAndColumn(row, column-1, player_turn)
 
 def client_specific_server(portn, clientname):
     lhost="127.0.0.1"
@@ -79,13 +329,6 @@ def room_creator():
 
 class player_game_room(Thread):
     
-    playerOneAtoms = []
-    playerTwoAtoms = []
-    grid = []
-    for row in range(10):
-        grid.append([])
-        for column in range(10):
-            grid[row].append(0)  
 
 
     def __init__(self, play1, play2):
@@ -127,15 +370,6 @@ class player_game_room(Thread):
             first=self.play2
 
         data=pickle.dumps("Ready")
-        #Assigning turns to the players
-        while True:
-            if turn % 2 == 0:
-                #player 1's turn
-                #1. Sending the signal to player one to play it's move
-            else:
-            
-                #player 2's turn
-                #1. Sending the signal to player two to play it's move
         player1.send(data)
         player2.send(data)
         data=pickle.dumps(self.play1)
@@ -147,43 +381,124 @@ class player_game_room(Thread):
         player2.send(data)
 
         count=1
-        while True: 
+        while True:
+            print("This executes\n")
             if count%2 == 1:
-                player2.send(pickle.dumps(0))
-                player1.send(pickle.dumps(1))
-                recvdata = player1.recv(1024)
+                #New dictionary
+                signal_and_data = {}
+                signal_and_data["signal"] = 0
+                signal_and_data["atoms"] = playerTwoAtoms
+                player2.send(pickle.dumps(signal_and_data))
+                signal_and_data["signal"] = 1
+                player1.send(pickle.dumps(signal_and_data))
+                print("Data sent to player 1\n")
                 recv_data=pickle.loads(recvdata)
+                print("Data recieved by Player 1\n")
+                #After we've recieved the data first we will need to compute everything and make changes to our grid locally
+                if recv_data["event"] == 1:
+                    #this the quit command, this client has exited the game
+                    print("This player wants to quit the game")
+                if recv_data["event"] == 2:
+                    #This is the mousebutton command
+
+                    column = recv_data["c"]
+                    row = recv_data["r"]
+
+                    if (row, column) in playerTwoAtoms:
+                        print("You can't click there")
+                    else:
+                        if (row, column) in playerOneAtoms:
+                            print("It is already in the block")   
+                            # Set that location to one
+                            grid[row][column] += 1
+                            turn = turn + 1
+                            checkForRowAndColumn(row, column, 1)
+                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            print("thisPlayerAtoms are: ", playerOneAtoms)
+                            print("otherPlayerAtoms are: ", playerTwoAtoms)
+
+                        else:
+                            playerOneAtoms.append(tuple([row, column]))
+                            # Set that location to one
+                            grid[row][column] += 1
+                            turn = turn + 1
+                            checkForRowAndColumn(row, column, 1)
+                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            print("thisPlayerAtoms are: ", playerOneAtoms)
+                            print("otherPlayerAtoms are: ", playerTwoAtoms)
+
                 #processing grid data
                 grid_data=recv_data["grid"]
                 flag=1
-                if not self.check_grid(grid_data, player1_atom, player2_atom):
+                if not self.check_grid(grid_data, playerOneAtoms, playerTwoAtoms):
                     flag=0
                 
                 #add the function to cross check grid here 
-                if flag = 0:
-                    print("It's incorrect")
-                else:
+                if recv_data["grid"] == grid:
                     print("It is correct")
-                player2.send(recvdata)
+                else:
+                    print("It is incorrect")
+                # player2.send(recvdata)
                 #recvdata = player2.recv(1024)
                 #if pickle.loads(recvdata) ==1:
             else:
-                player1.send(pickle.dumps(0))
-                player2.send(pickle.dumps(1))
+
+                signal_and_data = {}
+                signal_and_data["signal"] = 0
+                signal_and_data["atoms"] = playerOneAtoms
+                player1.send(pickle.dumps(signal_and_data))
+                signal_and_data["signal"] = 1
+                player2.send(pickle.dumps(signal_and_data))
                 recvdata = player2.recv(1024)
                 recv_data=pickle.loads(recvdata)
+                #After we've recieved the data first we will need to compute everything and make changes to our grid locally
+                if recv_data["event"] == 1:
+                    #this the quit command, this client has exited the game
+                    print("This player wants to quit the game")
+                if recv_data["event"] == 2:
+                    #This is the mousebutton command
+                    pos = recv_data["position"]
+
+                    column = pos[0] // (WIDTH + MARGIN)
+                    row = pos[1] // (HEIGHT + MARGIN)
+
+                    if (row, column) in playerOneAtoms:
+                        print("You can't click there")
+                    else:
+                        if (row, column) in playerTwoAtoms:
+                            print("It is already in the block")  
+                            # Set that location to one
+                            grid[row][column] += 1
+                            turn = turn + 1
+                            checkForRowAndColumn(row, column, 2)
+                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            print("thisPlayerAtoms are: ", playerOneAtoms)
+                            print("otherPlayerAtoms are: ", playerTwoAtoms)
+
+                        else:
+                            playerTwoAtoms.append(tuple([row, column]))
+                            # Set that location to one
+                            grid[row][column] += 1
+                            turn = turn + 1
+                            checkForRowAndColumn(row, column, 2)
+                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            print("thisPlayerAtoms are: ", playerOneAtoms)
+                            print("otherPlayerAtoms are: ", playerTwoAtoms)
+
                 #processing grid data
                 grid_data=recv_data["grid"]
                 flag=1
-                if not self.check_grid(grid_data, player1_atom, player2_atom):
+                if not self.check_grid(grid_data, playerOneAtoms, playerTwoAtoms):
                     flag=0
                 
                 #add the function to cross check grid here 
-                if flag = 0:
-                    print("It's incorrect")
-                else:
+                if recv_data["grid"] == grid:
                     print("It is correct")
-                player1.send(recvdata)
+                else:
+                    print("It is incorrect")
+                # player2.send(recvdata)
+                #recvdata = player2.recv(1024)
+                #if pickle.loads(recvdata) ==1:
 
 
 
