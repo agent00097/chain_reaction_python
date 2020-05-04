@@ -385,24 +385,24 @@ class player_game_room(Thread):
             print("This executes\n")
             if count%2 == 1:
                 #New dictionary
-                signal_and_data = {}
-                signal_and_data["signal"] = 0
-                signal_and_data["atoms"] = playerTwoAtoms
+                signal_and_data = []
+                signal_and_data.append(0)
+                signal_and_data.append(playerTwoAtoms)
                 player2.send(pickle.dumps(signal_and_data))
-                signal_and_data["signal"] = 1
+                signal_and_data[0] = 1
                 player1.send(pickle.dumps(signal_and_data))
                 print("Data sent to player 1\n")
                 recv_data=pickle.loads(recvdata)
                 print("Data recieved by Player 1\n")
                 #After we've recieved the data first we will need to compute everything and make changes to our grid locally
-                if recv_data["event"] == 1:
+                if recv_data[0] == 1:
                     #this the quit command, this client has exited the game
                     print("This player wants to quit the game")
-                if recv_data["event"] == 2:
+                if recv_data[0] == 2:
                     #This is the mousebutton command
 
-                    column = recv_data["c"]
-                    row = recv_data["r"]
+                    column = recv_data[5]
+                    row = recv_data[4]
 
                     if (row, column) in playerTwoAtoms:
                         print("You can't click there")
@@ -413,7 +413,7 @@ class player_game_room(Thread):
                             grid[row][column] += 1
                             turn = turn + 1
                             checkForRowAndColumn(row, column, 1)
-                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            # print("Click ", pos, "Grid coordinates: ", row, column)
                             print("thisPlayerAtoms are: ", playerOneAtoms)
                             print("otherPlayerAtoms are: ", playerTwoAtoms)
 
@@ -423,44 +423,44 @@ class player_game_room(Thread):
                             grid[row][column] += 1
                             turn = turn + 1
                             checkForRowAndColumn(row, column, 1)
-                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            # print("Click ", pos, "Grid coordinates: ", row, column)
                             print("thisPlayerAtoms are: ", playerOneAtoms)
                             print("otherPlayerAtoms are: ", playerTwoAtoms)
 
                 #processing grid data
-                grid_data=recv_data["grid"]
+                grid_data=recv_data[3]
                 flag=1
                 if not self.check_grid(grid_data, playerOneAtoms, playerTwoAtoms):
                     flag=0
                 
                 #add the function to cross check grid here 
-                if recv_data["grid"] == grid:
+                if recv_data[3] == grid:
                     print("It is correct")
                 else:
                     print("It is incorrect")
+
                 # player2.send(recvdata)
                 #recvdata = player2.recv(1024)
                 #if pickle.loads(recvdata) ==1:
             else:
 
-                signal_and_data = {}
-                signal_and_data["signal"] = 0
-                signal_and_data["atoms"] = playerOneAtoms
+                signal_and_data = []
+                signal_and_data.append(0)
+                signal_and_data.append(playerOneAtoms)
                 player1.send(pickle.dumps(signal_and_data))
-                signal_and_data["signal"] = 1
+                signal_and_data[0] = 1
                 player2.send(pickle.dumps(signal_and_data))
                 recvdata = player2.recv(1024)
                 recv_data=pickle.loads(recvdata)
                 #After we've recieved the data first we will need to compute everything and make changes to our grid locally
-                if recv_data["event"] == 1:
+                if recv_data[0] == 1:
                     #this the quit command, this client has exited the game
                     print("This player wants to quit the game")
-                if recv_data["event"] == 2:
+                if recv_data[0] == 2:
                     #This is the mousebutton command
-                    pos = recv_data["position"]
 
-                    column = pos[0] // (WIDTH + MARGIN)
-                    row = pos[1] // (HEIGHT + MARGIN)
+                    column = recv_data[5] // (WIDTH + MARGIN)
+                    row = recv_data[4] // (HEIGHT + MARGIN)
 
                     if (row, column) in playerOneAtoms:
                         print("You can't click there")
@@ -471,7 +471,7 @@ class player_game_room(Thread):
                             grid[row][column] += 1
                             turn = turn + 1
                             checkForRowAndColumn(row, column, 2)
-                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            # print("Click ", pos, "Grid coordinates: ", row, column)
                             print("thisPlayerAtoms are: ", playerOneAtoms)
                             print("otherPlayerAtoms are: ", playerTwoAtoms)
 
@@ -481,18 +481,18 @@ class player_game_room(Thread):
                             grid[row][column] += 1
                             turn = turn + 1
                             checkForRowAndColumn(row, column, 2)
-                            print("Click ", pos, "Grid coordinates: ", row, column)
+                            # print("Click ", pos, "Grid coordinates: ", row, column)
                             print("thisPlayerAtoms are: ", playerOneAtoms)
                             print("otherPlayerAtoms are: ", playerTwoAtoms)
 
                 #processing grid data
-                grid_data=recv_data["grid"]
+                grid_data=recv_data[3]
                 flag=1
                 if not self.check_grid(grid_data, playerOneAtoms, playerTwoAtoms):
                     flag=0
                 
                 #add the function to cross check grid here 
-                if recv_data["grid"] == grid:
+                if recv_data[3] == grid:
                     print("It is correct")
                 else:
                     print("It is incorrect")

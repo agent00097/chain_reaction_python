@@ -161,13 +161,13 @@ clock = pygame.time.Clock()
 
 
 def sendDatatoServer(typeOfEvent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column):
-    my_data = {}
-    my_data["event"] = typeOfEvent
-    my_data["thisatoms"] = thisPlayerAtoms
-    my_data["opponentatoms"] = otherPlayerAtoms
-    my_data["gri"] = grid
-    my_data["r"] = row
-    my_data["c"] = column
+    my_data = []
+    my_data.append(typeOfEvent)
+    my_data.append(thisPlayerAtoms)
+    my_data.append(otherPlayerAtoms)
+    my_data.append(grid)
+    my_data.append(row)
+    my_data.append(column)
     # data = pickle.dumps(data_to_be_sent_in_whatever_format)
     ssl_sock.send(pickle.dumps(my_data))
 
@@ -429,8 +429,9 @@ while not done:
     signal_move_prime = pickle.loads(data_for_move)
     # signal_move = signal_move_prime["signal"]
     print("Signal recieved from Server", signal_move_prime)
-    if int(signal_move_prime["signal"]) == 1:
-        otherPlayerAtoms = signal_move_prime["atoms"]
+    # print(type(signal_move_prime))
+    if signal_move_prime[0] == 1:
+        otherPlayerAtoms = signal_move_prime[1]
         #Now, we know that it's our turn
         for event in pygame.event.get():
             #Now we've got event of this client
