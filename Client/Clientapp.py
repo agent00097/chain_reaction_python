@@ -173,6 +173,13 @@ def sendDatatoServer(typeOfEvent, thisPlayerAtoms, otherPlayerAtoms, signal, gri
     ssl_sock.send(my_data)
     # data = pickle.dumps(data_to_be_sent_in_whatever_format)
     # ssl_sock.send(data)
+    mydata={}
+    mydata["event"]=typeOfEvent
+    mydata["playone"]=typeOfEvent
+    
+    ssl_sock.send(pickle.dumps(mydata))
+
+
 
 
 #Gaming algorithm
