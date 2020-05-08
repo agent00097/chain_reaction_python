@@ -83,13 +83,12 @@ print (ssl_sock.cipher())
 print (pprint.pformat(ssl_sock.getpeercert()))
 ######Printing SSL (It is not really important, it's for the sake of debugging)
 
-# send the byte data in "data" variable to server, recieve the response from server, convert the from server from byte to normal format
+
 try:
     ssl_sock.send(data)
     modifieddata = ssl_sock.recv(1024)
     data=pickle.loads(modifieddata) 
-    #this "data" variable stores the port number specifically assigned to the user eg. 65000 and if there is an error
-    #or the username is  already present in backend, we return -1
+    
     print(data)
     ssl_sock.close()
 except:
@@ -118,16 +117,11 @@ except:
 #Sending some data to server (To tell server the new client connection is ready)
 data=pickle.dumps(1)
 ssl_sock.send(data)
-#Receive the data sent by the server (To tell the client the new connection at server side is also ready)
-# "modifieddata" stores this string " You are added in buffer"
 modifieddata = ssl_sock.recv(1024)
 data=pickle.loads(modifieddata) 
 print(data)
 
-#This loop is used to wait for room creation
-# Atleast two users should be connected to server to start a game
-#Every 5 seconds, the servers check for number of connections, if there is only one user, the server sends "Waiting"
-#If server has found a another player, server sends "Ready"
+
 while data != "Ready":
     modifieddata = ssl_sock.recv(1024)
     data=pickle.loads(modifieddata)
@@ -160,27 +154,20 @@ pygame.display.set_caption("Game Window:")
 clock = pygame.time.Clock()
 
 
-def sendDatatoServer(typeOfEvent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column):
+def sendDatatoServer(typeOfEvent, tPlayerAtoms, oPlayerAtoms, grid, row, column):
     my_data = []
     my_data.append(typeOfEvent)
-    my_data.append(thisPlayerAtoms)
-    my_data.append(otherPlayerAtoms)
+    my_data.append(tPlayerAtoms)
+    my_data.append(oPlayerAtoms)
     my_data.append(grid)
     my_data.append(row)
     my_data.append(column)
-    # data = pickle.dumps(data_to_be_sent_in_whatever_format)
-<<<<<<< HEAD
+    print(my_data)
+    data = pickle.dumps(my_data)
     # ssl_sock.send(data)
-    mydata={}
-    mydata["event"]=typeOfEvent
-    mydata["playone"]=typeOfEvent
-    
-    ssl_sock.send(pickle.dumps(mydata))
+    ssl_sock.send(data)
 
 
-=======
-    ssl_sock.send(pickle.dumps(my_data))
->>>>>>> bc1f897529aac0eb568d04936304a85f4bf7df34
 
 
 #Gaming algorithm
@@ -433,81 +420,80 @@ for row in range(10):
                               WIDTH,
                               HEIGHT])
 
+data_for_first = ssl_sock.recv(1024)
+first_data = pickle.loads(data_for_first)
+print("First="+first_data)
+
+turn=0
 while not done:
-    event = 0
+    event_sent = 0
     signal_move = 0
     data_for_move = ssl_sock.recv(1024)
     signal_move_prime = pickle.loads(data_for_move)
     # signal_move = signal_move_prime["signal"]
     print("Signal recieved from Server", signal_move_prime)
+
     # print(type(signal_move_prime))
     if signal_move_prime[0] == 1:
         otherPlayerAtoms = signal_move_prime[1]
-        #Now, we know that it's our turn
-        for event in pygame.event.get():
+        flag=0
+        while flag!=1:
+            for event in pygame.event.get():
             #Now we've got event of this client
-            if event.type == pygame.QUIT:  # If user clicked close
-                event = 1
-                done = True  # Flag that we are done so we exit this loop
+                if event.type == pygame.QUIT:  # If user clicked close
+                    event_sent = 1
+                    done = True
+                    flag = 1  # Flag that we are done so we exit this loop
                 #Now we need to send a signal to server saying that this player has quit the game
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                event = 2
-            # User clicks the mouse. Get the position
-                pos = pygame.mouse.get_pos()
-                # Change the x/y screen coordinates to grid coordinates
-                column = pos[0] // (WIDTH + MARGIN)
-                row = pos[1] // (HEIGHT + MARGIN)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    event_sent = 2
+                    pos = pygame.mouse.get_pos()
+                    flag=1
 
-                if (row, column) in otherPlayerAtoms:
-                    print("You can't click there")
+       
+        if event_sent == 1:  # If user clicked close
+            done = True  # Flag that we are done so we exit this loop
+            #Now we need to send a signal to server saying that this player has quit the game
+        elif event_sent == 2:
+        # User clicks the mouse. Get the position
+            # Change the x/y screen coordinates to grid coordinates
+            column = pos[0] // (WIDTH + MARGIN)
+            row = pos[1] // (HEIGHT + MARGIN)
+
+            if (row, column) in otherPlayerAtoms:
+                print("You can't click there")
+            else:
+                if (row, column) in thisPlayerAtoms:
+                    print("It is already in the block")   
+                    # Set that location to one
+                    grid[row][column] += 1
+                    turn = turn + 1
+                    checkForRowAndColumn(row, column, 1)
+                    print("Click ", pos, "Grid coordinates: ", row, column)
+                    print("thisPlayerAtoms are: ", thisPlayerAtoms)
+                    print("otherPlayerAtoms are: ", otherPlayerAtoms)
                 else:
-                    if (row, column) in thisPlayerAtoms:
-                        print("It is already in the block")   
-                        # Set that location to one
-                        grid[row][column] += 1
-                        turn = turn + 1
-                        checkForRowAndColumn(row, column, 1)
-                        print("Click ", pos, "Grid coordinates: ", row, column)
-                        print("thisPlayerAtoms are: ", thisPlayerAtoms)
-                        print("otherPlayerAtoms are: ", otherPlayerAtoms)
-                    else:
-                        otherPlayerAtoms.append(tuple([row, column]))
-                        # Set that location to one
-                        grid[row][column] += 1
-                        turn = turn + 1
-                        checkForRowAndColumn(row, column, 1)
-                        print("Click ", pos, "Grid coordinates: ", row, column)
-                        print("thisPlayerAtoms are: ", thisPlayerAtoms)
-                        print("otherPlayerAtoms are: ", otherPlayerAtoms)
+                    otherPlayerAtoms.append(tuple([row, column]))
+                    # Set that location to one
+                    grid[row][column] += 1
+                    turn = turn + 1
+                    checkForRowAndColumn(row, column, 1)
+                    print("Click ", pos, "Grid coordinates: ", row, column)
+                    print("thisPlayerAtoms are: ", thisPlayerAtoms)
+                    print("otherPlayerAtoms are: ", otherPlayerAtoms)
 
         #This is where I have to send the data
-        sendDatatoServer(event, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
+        sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
+        ret = ssl_sock.recv(1024)
+        if pickle.loads(ret) == 0:
+            print("Error")
+
 
 
     #Now Drawing it on the screen
     for row in range(10):
         for column in range(10):
             color = WHITE
-            # if grid[row][column] == 1:
-            #     if (turn % 2):
-            #         color = LIGHT_RED
-            #     else:
-            #         color = LIGHT_GREEN
-            # if grid[row][column] == 2:
-            #     if (turn % 2):
-            #         color = LIGHT_RED_2
-            #     else:
-            #         color = LIGHT_GREEN_2
-            # if grid[row][column] == 3:
-            #     if (turn % 2):
-            #         color = RED
-            #     else:
-            #         color = GREEN
-            # if grid[row][column] == 4:
-            #     if (turn % 2):
-            #         color = DARK_RED
-            #     else:
-            #         color = DARK_GREEN
             pygame.draw.rect(screen,
                              color,
                              [(MARGIN + WIDTH) * column + MARGIN,
@@ -563,21 +549,8 @@ while not done:
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
 
-#Use these functions to send or recieve data
-#send
-# data = pickle.dumps(data_to_be_sent_in_whatever_format)
-# ssl_sock.send(data)
-# receive
-# data_from_server = ssl_sock.recv(1024)
-# data = pickle.loads (data_from_server)
+
 
 
 ssl_sock.close()
 
-
-    #name=gethostbyname(gethostname())
-    #print(name)
-    #print(gethostname())
-#except :
-#	print("Connection error")
-	
