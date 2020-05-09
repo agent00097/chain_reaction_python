@@ -37,6 +37,8 @@ for row in range(10):
         grid[row].append(0)  # Append a cell
 
 
+
+
 # a is just an example of grid
 a=[[0]*6 for i in range(11)]
 b=[]
@@ -152,6 +154,18 @@ pygame.display.set_caption("Game Window:")
  
 # Used to manage how fast the screen updates
 clock = pygame.time.Clock()
+
+screen.fill(GREEN)
+for row in range(10):
+    for column in range(10):
+            color = WHITE
+
+            pygame.draw.rect(screen,
+                                color,
+                                [(MARGIN + WIDTH) * column + MARGIN,
+                                (MARGIN + HEIGHT) * row + MARGIN,
+                                WIDTH,
+                                HEIGHT])
 
 
 def sendDatatoServer(typeOfEvent, tPlayerAtoms, oPlayerAtoms, grid, row, column):
@@ -430,6 +444,8 @@ while not done:
 
     print("DEBUG: filling the screen with green now")
 
+    clock.tick(60)
+
     screen.fill(GREEN)
     for row in range(10):
             for column in range(10):
@@ -441,6 +457,9 @@ while not done:
                                 (MARGIN + HEIGHT) * row + MARGIN,
                                 WIDTH,
                                 HEIGHT])
+
+    print("DEBUG: Screen should have been filled with green at this point")
+
 
     # print(type(signal_move_prime))
     if signal_move_prime[0] == 1:
@@ -477,6 +496,7 @@ while not done:
                                 WIDTH,
                                 HEIGHT])
 
+
         print("DEBUG: Just filled in all the cells according to this client")
 
         #This is to update the screen according to player two
@@ -500,6 +520,10 @@ while not done:
                                 HEIGHT])
 
         print("Just filled in the cells with red according to Opponent's data")
+
+        clock.tick(60)
+
+        pygame.display.flip()
 
         flag=0
         while flag!=1:
