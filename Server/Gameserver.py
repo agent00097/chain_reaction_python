@@ -419,19 +419,24 @@ class player_game_room(Thread):
                 recv_data=pickle.loads(recvdata)
                 print("Data recieved by Player 1\n")
                 print(recv_data)
-                self.playerOneAtoms=recv_data[2]
-                """
+
                 #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                 if recv_data[0] == 1:
+                    print("DEBUG: player 1 clicked on the exit button")
                     #this the quit command, this client has exited the game
                     print("This player wants to quit the game")
                 if recv_data[0] == 2:
                     #This is the mousebutton command
 
+                    print("DEBUG: Player 1 click on one of the cell")
+
                     column = recv_data[5]
                     row = recv_data[4]
+                    
+                    print("DEBUG: row ",row," and column ", column, "were obtained")
 
                     if (row, column) in self.playerTwoAtoms:
+                        print("DEBUG: row and column exists in player two")
                         print("You can't click there")
                     else:
                         if (row, column) in self.playerOneAtoms:
@@ -453,7 +458,11 @@ class player_game_room(Thread):
                             # print("Click ", pos, "Grid coordinates: ", row, column)
                             print("thisPlayerAtoms are: ", self.playerOneAtoms)
                             print("otherPlayerAtoms are: ", self.playerTwoAtoms)
-                            """
+
+                
+                
+                
+                            
 
                 #processing grid data
                 turn=turn+1
@@ -471,11 +480,12 @@ class player_game_room(Thread):
                 
 
                 #player1.send(pickle.dumps(flag))
-                player1.send(pickle.dumps(1))
+                # player1.send(pickle.dumps(1))
                 #recvdata = player2.recv(1024)
                 #if pickle.loads(recvdata) ==1:
             else:
 
+                #New dictionary
                 signal_and_data = []
                 signal_and_data.append(0)
                 signal_and_data.append(self.playerOneAtoms)
@@ -483,14 +493,15 @@ class player_game_room(Thread):
                 signal_and_data[0] = 1
                 player2.send(pickle.dumps(signal_and_data))
                 print("Data sent to player 2\n")
+
                 recvdata = player2.recv(1024)
                 recv_data=pickle.loads(recvdata)
-                
-                print("Data recieved from player 2\n")
+                print("Data recieved by Player 2\n")
                 print(recv_data)
-                self.playerTwoAtoms=recv_data[2]
+                
+                
 
-                """
+                
                 #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                 if recv_data[0] == 1:
                     #this the quit command, this client has exited the game
@@ -498,8 +509,12 @@ class player_game_room(Thread):
                 if recv_data[0] == 2:
                     #This is the mousebutton command
 
-                    column = recv_data[5] // (WIDTH + MARGIN)
-                    row = recv_data[4] // (HEIGHT + MARGIN)
+                    print("DEBUG: Inside Player 2:  Player 2 has clicked on a cell")
+
+                    column = recv_data[5]
+                    row = recv_data[4]
+
+                    print("DEBUG: Column ", column, " and Row ", row, "was recieved from player two")
 
                     if (row, column) in self.playerOneAtoms:
                         print("You can't click there")
@@ -523,8 +538,9 @@ class player_game_room(Thread):
                             # print("Click ", pos, "Grid coordinates: ", row, column)
                             print("thisPlayerAtoms are: ", self.playerOneAtoms)
                             print("otherPlayerAtoms are: ", self.playerTwoAtoms)
-                            """
-
+                            
+                print("Data recieved from player 2\n")
+                print(recv_data)
 
                 #processing grid data
                 turn=turn+1
@@ -540,7 +556,7 @@ class player_game_room(Thread):
                     print("It is incorrect")
                     flag=0
                 #player2.send(pickle.dumps(flag))
-                player2.send(pickle.dumps(1))
+                # player2.send(pickle.dumps(1))
                 # player2.send(recvdata)
                 #recvdata = player2.recv(1024)
                 #if pickle.loads(recvdata) ==1:
