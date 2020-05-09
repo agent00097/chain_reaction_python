@@ -408,24 +408,19 @@ def checkForTheFour(row, column, player_turn):
         checkForRowAndColumn(row, column-1, player_turn)
 
 
-screen.fill(GREEN)
-for row in range(10):
-        for column in range(10):
-            color = WHITE
 
-            pygame.draw.rect(screen,
-                             color,
-                             [(MARGIN + WIDTH) * column + MARGIN,
-                              (MARGIN + HEIGHT) * row + MARGIN,
-                              WIDTH,
-                              HEIGHT])
 
 data_for_first = ssl_sock.recv(1024)
 first_data = pickle.loads(data_for_first)
 print("First="+first_data)
 
+
+
 turn=0
 while not done:
+
+    
+
     event_sent = 0
     signal_move = 0
     data_for_move = ssl_sock.recv(1024)
@@ -433,9 +428,79 @@ while not done:
     # signal_move = signal_move_prime["signal"]
     print("Signal recieved from Server", signal_move_prime)
 
+    print("DEBUG: filling the screen with green now")
+
+    screen.fill(GREEN)
+    for row in range(10):
+            for column in range(10):
+                color = WHITE
+
+                pygame.draw.rect(screen,
+                                color,
+                                [(MARGIN + WIDTH) * column + MARGIN,
+                                (MARGIN + HEIGHT) * row + MARGIN,
+                                WIDTH,
+                                HEIGHT])
+
     # print(type(signal_move_prime))
     if signal_move_prime[0] == 1:
         otherPlayerAtoms = signal_move_prime[1]
+
+        screen.fill(GREEN)
+        for row in range(10):
+            for column in range(10):
+                color = WHITE
+
+                pygame.draw.rect(screen,
+                                color,
+                                [(MARGIN + WIDTH) * column + MARGIN,
+                                (MARGIN + HEIGHT) * row + MARGIN,
+                                WIDTH,
+                                HEIGHT])
+
+        for row in range(10):
+            for column in range(10):
+                #Color of the player one is green
+                if (row, column) in thisPlayerAtoms:
+                    if grid[row][column] == 1:
+                        color = LIGHT_GREEN
+                    elif grid[row][column] == 2:
+                        color = LIGHT_GREEN_2
+                    elif grid[row][column] == 3:
+                        color = GREEN
+                    else:
+                        color = DARK_GREEN
+                    pygame.draw.rect(screen,
+                                color,
+                                [(MARGIN + WIDTH) * column + MARGIN,
+                                (MARGIN + HEIGHT) * row + MARGIN,
+                                WIDTH,
+                                HEIGHT])
+
+        print("DEBUG: Just filled in all the cells according to this client")
+
+        #This is to update the screen according to player two
+        for row in range(10):
+            for column in range(10):
+                #Color of the player one is red
+                if (row, column) in otherPlayerAtoms:
+                    if grid[row][column] == 1:
+                        color = LIGHT_RED
+                    elif grid[row][column] == 2:
+                        color = LIGHT_RED_2
+                    elif grid[row][column] == 3:
+                        color = RED
+                    else:
+                        color = DARK_RED
+                    pygame.draw.rect(screen,
+                                color,
+                                [(MARGIN + WIDTH) * column + MARGIN,
+                                (MARGIN + HEIGHT) * row + MARGIN,
+                                WIDTH,
+                                HEIGHT])
+
+        print("Just filled in the cells with red according to Opponent's data")
+
         flag=0
         while flag!=1:
             for event in pygame.event.get():
@@ -460,6 +525,8 @@ while not done:
             column = pos[0] // (WIDTH + MARGIN)
             row = pos[1] // (HEIGHT + MARGIN)
 
+            print("DEBUG: Row and Column acquired : ", row, " ", column)
+
             if (row, column) in otherPlayerAtoms:
                 print("You can't click there")
             else:
@@ -473,7 +540,7 @@ while not done:
                     print("thisPlayerAtoms are: ", thisPlayerAtoms)
                     print("otherPlayerAtoms are: ", otherPlayerAtoms)
                 else:
-                    otherPlayerAtoms.append(tuple([row, column]))
+                    thisPlayerAtoms.append(tuple([row, column]))
                     # Set that location to one
                     grid[row][column] += 1
                     turn = turn + 1
