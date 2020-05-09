@@ -8,16 +8,16 @@ import pygame
 from tkinter import *   
 
 # Define some colors
-LIGHT_RED = (249, 200, 200)
+LIGHT_RED = (255, 180, 180)
 LIGHT_GREEN = (200, 249, 226)
-LIGHT_RED_2 = (243, 95, 129)
+LIGHT_RED_2 = (247, 109, 109)
 LIGHT_GREEN_2 = (101, 255, 78)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (88, 214, 141)
-RED = (231, 76, 60)
+RED = (242, 47, 47)
 DARK_GREEN = (12, 75, 3)
-DARK_RED = (124, 13, 43)
+DARK_RED = (179, 21, 21)
 ORANGE = (255,174,66)
 YELLOW = (255,255,0)
 
@@ -28,13 +28,8 @@ HEIGHT = 40
 # This sets the margin between each cell
 MARGIN = 5
 
-grid = []
-for row in range(10):
-    # Add an empty array that will hold each cell
-    # in this row
-    grid.append([])
-    for column in range(10):
-        grid[row].append(0)  # Append a cell
+grid = [[0]*10]*10
+grid = [ ([0] * 10) for row in range(10)]
 
 
 
@@ -197,6 +192,7 @@ def checkForRowAndColumn(row, column, player_turn):
         #We have to burst at two
         if(grid[row][column] == 2):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row+1][column] += 1
             deleteTheAtom(row+1, column)
             if player_turn == 1:
@@ -216,6 +212,7 @@ def checkForRowAndColumn(row, column, player_turn):
         #We have to burst at two
         if(grid[row][column] == 2):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row-1][column] += 1
             deleteTheAtom(row-1, column)
             if player_turn == 1:
@@ -234,6 +231,7 @@ def checkForRowAndColumn(row, column, player_turn):
     if (row == 0 and column == 9):
         if(grid[row][column] == 2):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row+1][column] += 1
             deleteTheAtom(row+1, column)
             if player_turn == 1:
@@ -253,6 +251,7 @@ def checkForRowAndColumn(row, column, player_turn):
     if (row == 9 and column == 9):
         if(grid[row][column] == 2):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row-1][column] += 1
             deleteTheAtom(row-1, column)
             if player_turn == 1:
@@ -272,6 +271,7 @@ def checkForRowAndColumn(row, column, player_turn):
         #We now check for three
         if(grid[row][column] == 3):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row+1][column] += 1
             deleteTheAtom(row+1, column)
             if player_turn == 1:
@@ -297,6 +297,7 @@ def checkForRowAndColumn(row, column, player_turn):
     if (row == 9 and column >=1 and column <=8):
         if(grid[row][column] == 3):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row-1][column] += 1
             deleteTheAtom(row-1, column)
             if player_turn == 1:
@@ -322,6 +323,7 @@ def checkForRowAndColumn(row, column, player_turn):
     if (column == 9 and row >=1 and row <=8):
         if(grid[row][column] == 3):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row-1][column] += 1
             deleteTheAtom(row-1, column)
             if player_turn == 1:
@@ -348,6 +350,7 @@ def checkForRowAndColumn(row, column, player_turn):
     if (column == 0 and row >=1 and row <=8):
         if(grid[row][column] == 3):
             grid[row][column] = 0
+            deleteTheAtom(row,column)
             grid[row-1][column] += 1
             deleteTheAtom(row-1, column)
             if player_turn == 1:
@@ -392,6 +395,7 @@ def checkForWin():
 def checkForTheFour(row, column, player_turn):
     if(grid[row][column] == 4):
         grid[row][column] = 0
+        deleteTheAtom(row,column)
         grid[row+1][column] += 1
         deleteTheAtom(row+1, column)
         if player_turn == 1:
@@ -428,25 +432,8 @@ data_for_first = ssl_sock.recv(1024)
 first_data = pickle.loads(data_for_first)
 print("First="+first_data)
 
+def screenUpdate():
 
-
-turn=0
-while not done:
-
-    
-
-    event_sent = 0
-    signal_move = 0
-    data_for_move = ssl_sock.recv(1024)
-    signal_move_prime = pickle.loads(data_for_move)
-    # signal_move = signal_move_prime["signal"]
-    print("Signal recieved from Server", signal_move_prime)
-
-    print("DEBUG: filling the screen with green now")
-
-    clock.tick(60)
-
-    screen.fill(GREEN)
     for row in range(10):
             for column in range(10):
                 color = WHITE
@@ -458,26 +445,7 @@ while not done:
                                 WIDTH,
                                 HEIGHT])
 
-    print("DEBUG: Screen should have been filled with green at this point")
-
-
-    # print(type(signal_move_prime))
-    if signal_move_prime[0] == 1:
-        otherPlayerAtoms = signal_move_prime[1]
-
-        screen.fill(GREEN)
-        for row in range(10):
-            for column in range(10):
-                color = WHITE
-
-                pygame.draw.rect(screen,
-                                color,
-                                [(MARGIN + WIDTH) * column + MARGIN,
-                                (MARGIN + HEIGHT) * row + MARGIN,
-                                WIDTH,
-                                HEIGHT])
-
-        for row in range(10):
+    for row in range(10):
             for column in range(10):
                 #Color of the player one is green
                 if (row, column) in thisPlayerAtoms:
@@ -487,7 +455,7 @@ while not done:
                         color = LIGHT_GREEN_2
                     elif grid[row][column] == 3:
                         color = GREEN
-                    else:
+                    elif grid[row][column] == 4:
                         color = DARK_GREEN
                     pygame.draw.rect(screen,
                                 color,
@@ -497,33 +465,86 @@ while not done:
                                 HEIGHT])
 
 
-        print("DEBUG: Just filled in all the cells according to this client")
+    print("DEBUG: Just filled in all the cells according to this client")
 
         #This is to update the screen according to player two
-        for row in range(10):
-            for column in range(10):
+    for row in range(10):
+        for column in range(10):
                 #Color of the player one is red
-                if (row, column) in otherPlayerAtoms:
-                    if grid[row][column] == 1:
-                        color = LIGHT_RED
-                    elif grid[row][column] == 2:
-                        color = LIGHT_RED_2
-                    elif grid[row][column] == 3:
-                        color = RED
-                    else:
-                        color = DARK_RED
-                    pygame.draw.rect(screen,
+            if (row, column) in otherPlayerAtoms:
+                print("DEBUG Row: ", row, " and Column: ", column, "have value: ", grid[row][column])
+                if grid[row][column] == 1:
+                    color = LIGHT_RED
+                elif grid[row][column] == 2:
+                    color = LIGHT_RED_2
+                elif grid[row][column] == 3:
+                    color = RED
+                elif grid[row][column] == 4:
+                    color = DARK_RED
+                pygame.draw.rect(screen,
                                 color,
                                 [(MARGIN + WIDTH) * column + MARGIN,
                                 (MARGIN + HEIGHT) * row + MARGIN,
                                 WIDTH,
                                 HEIGHT])
 
-        print("Just filled in the cells with red according to Opponent's data")
+    print("Just filled in the cells with red according to Opponent's data")
+        
+        # clock.tick(60)
 
-        clock.tick(60)
+    pygame.display.flip()
 
-        pygame.display.flip()
+
+turn=0
+while not done:
+
+    
+
+    event_sent = 0
+    signal_move = 0
+    data_for_move = ssl_sock.recv(1024)
+    print("DEBUG: size for data_for_move, " ,len(data_for_move))
+    print("DEBUG: value of data ", data_for_move)
+    signal_move_prime = pickle.loads(data_for_move)
+    # signal_move = signal_move_prime["signal"]
+    print("Signal recieved from Server", signal_move_prime)
+
+
+    clock.tick(60)
+
+    screen.fill(GREEN)
+    
+
+    otherPlayerAtoms = signal_move_prime[1]
+    thisPlayerAtoms = signal_move_prime[3]
+    grid = signal_move_prime[2]
+
+    screenUpdate()
+
+    c_turn = 0
+
+    print("DEBUG: Player_win value is : ", signal_move_prime[4])
+
+
+
+    if(signal_move_prime[4] == 1):
+        #player 1 won
+        Tk().wm_withdraw() #to hide the main window
+        messagebox.showinfo('Player One Won','Player One Won')
+        screen.quit()
+
+    if(signal_move_prime[4] == 2):
+        #player 1 won
+        Tk().wm_withdraw() #to hide the main window
+        messagebox.showinfo('Player Two Won','Player Two Won')
+        screen.quit() 
+
+    # print(type(signal_move_prime))
+    while signal_move_prime[0] == 1:
+        
+
+        screen.fill(GREEN)
+        
 
         flag=0
         while flag!=1:
@@ -539,11 +560,15 @@ while not done:
                     pos = pygame.mouse.get_pos()
                     flag=1
 
+        works = 0
        
+               
+
         if event_sent == 1:  # If user clicked close
             done = True  # Flag that we are done so we exit this loop
             #Now we need to send a signal to server saying that this player has quit the game
         elif event_sent == 2:
+            c_turn = c_turn+1
         # User clicks the mouse. Get the position
             # Change the x/y screen coordinates to grid coordinates
             column = pos[0] // (WIDTH + MARGIN)
@@ -552,87 +577,59 @@ while not done:
             print("DEBUG: Row and Column acquired : ", row, " ", column)
 
             if (row, column) in otherPlayerAtoms:
-                print("You can't click there")
+                print("You can't click there, Click again")
+                works = 1
             else:
                 if (row, column) in thisPlayerAtoms:
                     print("It is already in the block")   
                     # Set that location to one
-                    grid[row][column] += 1
+                    grid[row][column] = int(grid[row][column]) + 1
+                    print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
                     turn = turn + 1
                     checkForRowAndColumn(row, column, 1)
                     print("Click ", pos, "Grid coordinates: ", row, column)
                     print("thisPlayerAtoms are: ", thisPlayerAtoms)
                     print("otherPlayerAtoms are: ", otherPlayerAtoms)
                 else:
+                    print("DEBUG: before updating the grid, the grid is: ", grid)
                     thisPlayerAtoms.append(tuple([row, column]))
                     # Set that location to one
-                    grid[row][column] += 1
+                    grid[row][column] = int(grid[row][column]) + 1
+                    print(grid)
+                    print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
+                    print("DEBUG: the updated grid before the algorithm was executed is: ", grid)
+                    print("1234")
                     turn = turn + 1
                     checkForRowAndColumn(row, column, 1)
+                    print("DEBUG: The updated grid after the algorithm executed is, : ", grid)
                     print("Click ", pos, "Grid coordinates: ", row, column)
                     print("thisPlayerAtoms are: ", thisPlayerAtoms)
                     print("otherPlayerAtoms are: ", otherPlayerAtoms)
 
         #This is where I have to send the data
-        sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
-        ret = ssl_sock.recv(1024)
-        if pickle.loads(ret) == 0:
-            print("Error")
+        screenUpdate()
+        print("DEBUG: Works is : ", works)
 
+        if works == 0:
+            print("DEBUG: User clicked on the right part")
+            signal_move_prime[0] = 0
+            sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
+            ret = ssl_sock.recv(1024)
+            if pickle.loads(ret) == 0:
+                print("Error")
+        
+        else:
+            print("User didn't click on the right cell")
 
+        
+
+    screen.fill(RED)
+    c_turn=c_turn+1
 
     #Now Drawing it on the screen
-    for row in range(10):
-        for column in range(10):
-            color = WHITE
-            pygame.draw.rect(screen,
-                             color,
-                             [(MARGIN + WIDTH) * column + MARGIN,
-                              (MARGIN + HEIGHT) * row + MARGIN,
-                              WIDTH,
-                              HEIGHT])
+    screenUpdate()
 
-    #This is to update the screen according to player one
-    for row in range(10):
-        for column in range(10):
-            #Color of the player one is green
-            if (row, column) in thisPlayerAtoms:
-                if grid[row][column] == 1:
-                    color = LIGHT_GREEN
-                elif grid[row][column] == 2:
-                    color = LIGHT_GREEN_2
-                elif grid[row][column] == 3:
-                    color = GREEN
-                else:
-                    color = DARK_GREEN
-                pygame.draw.rect(screen,
-                             color,
-                             [(MARGIN + WIDTH) * column + MARGIN,
-                              (MARGIN + HEIGHT) * row + MARGIN,
-                              WIDTH,
-                              HEIGHT])
-
-    #This is to update the screen according to player two
-    for row in range(10):
-        for column in range(10):
-            #Color of the player one is red
-            if (row, column) in otherPlayerAtoms:
-                if grid[row][column] == 1:
-                    color = LIGHT_RED
-                elif grid[row][column] == 2:
-                    color = LIGHT_RED_2
-                elif grid[row][column] == 3:
-                    color = RED
-                else:
-                    color = DARK_RED
-                pygame.draw.rect(screen,
-                             color,
-                             [(MARGIN + WIDTH) * column + MARGIN,
-                              (MARGIN + HEIGHT) * row + MARGIN,
-                              WIDTH,
-                              HEIGHT])
-
-    # screen.fill(RED)
+    
  
     # Limit to 60 frames per second
     clock.tick(60)
