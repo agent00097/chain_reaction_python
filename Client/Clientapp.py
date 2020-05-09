@@ -42,14 +42,40 @@ a=[[0]*6 for i in range(11)]
 b=[]
 #regex is our regular expression for input validation of username
 regex=re.compile("^[a-zA-Z0-9]{0,20}$")
+regpass=re.compile("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$")
 
 #We ask user for input and check if it satisfies regex
-username=input("Give username : ")
-while regex.match(username) is None:
-    username=input("Invalid input, please Re-Enter username : ")
+userin=input("Press 1 to Log on , press to 2 login : ")
+if userin == 1: 
+    logon_or_login="logon"
+    username=input("Give username : ")
+    while regex.match(username) is None:
+        username=input("Invalid input, please Re-Enter username : ")
+
+    passw=input("Give password : ")
+    repassw=input("Re-enter password : ")
+    while regpass.match(passw) is None or passw!=repassw:
+        passw=input("Give password : ")
+        repassw=input("Re-enter password : ")
+else:
+    logon_or_login="login"
+    print("Enter Login Credentials")
+    username=input("Give username : ")
+    while regex.match(username) is None:
+        username=input("Invalid input, please Re-Enter username : ")
+
+    passw=input("Give password : ")
+    while regpass.match(passw) is None:
+        passw=input("Give password : ")
+        
+
+
+
 
 #Adding username, machine's ipaddress and the machine's name to a variable  b to send to server
+b.append(logon_or_login)
 b.append(username)
+b.append(passw)
 b.append(gethostbyname(gethostname()))
 b.append(gethostname())
 

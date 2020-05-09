@@ -1,10 +1,20 @@
 import pickle, re, time, random, sys, ssl
 from socket import *
-
+import hashlib,os,binascii
 from threading import Thread, Lock
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  passwd="root",
+  database="gameserver"
+)
+mycursor = mydb.cursor()
 
 ports=60000
 namereg=re.compile("^[a-zA-Z0-9]{0,20}$")
+regpass=re.compile("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$")
 LOCALHOST="127.0.0.1"
 server_port= 49999
 
@@ -30,6 +40,23 @@ MARGIN = 5
 #turn = 1
 
 done = False
+
+def hash_password(password):
+    """Hash a password for storing."""
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, 10)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
+
+def verify_password(stored_password, provided_password):
+    """Verify a stored password against one provided by user"""
+    salt = stored_password[:64]
+    stored_password = stored_password[64:]
+    pwdhash = hashlib.pbkdf2_hmac('sha512', provided_password.encode('utf-8'),salt.encode('ascii'),10)
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    return pwdhash == stored_password
+
+
 def client_specific_server(portn, clientname):
     lhost="127.0.0.1"
     port= portn
@@ -545,8 +572,6 @@ room.start()
     
 
 
-
-
 server = socket(AF_INET, SOCK_STREAM)
 server.bind((LOCALHOST, server_port))
 server.listen(50)
@@ -560,14 +585,23 @@ while True:
         
         if sentence:
             data=pickle.loads(sentence)
-            if namereg.match(data[0]) is None:
-                data=-1
+            if data[0]=="logon":
+                if namereg.match(data[1]) is None or regpass.match(data[2]) is None:
+                    data=-1
+                else:
+                    mycursor.execute("SELECT * FROM user WHERE name = %s;",(data[1],))
+                    x = mycursor.fetchone()
+                    if x is None:
+                        
+                        
 
-            elif data[0] not in userlist:
+
+
+            if data[0] not in userlist:
 
                 ipand=[]
-                ipand.append(data[1])
                 ipand.append(data[2])
+                ipand.append(data[3])
                 
 
                 if ports > 64000:
