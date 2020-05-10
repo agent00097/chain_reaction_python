@@ -43,9 +43,11 @@ regpass=re.compile("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,
 
 #We ask user for input and check if it satisfies regex
 userin=input("Press 1 to Log on , press to 2 login : ")
-if userin == 1: 
+if int(userin) == 1: 
+    print(userin)
     logon_or_login="logon"
     username=input("Give username : ")
+    print("Enter Logon Credentials")
     while regex.match(username) is None:
         username=input("Invalid input, please Re-Enter username : ")
 
@@ -120,7 +122,7 @@ except:
 
 #username is already present 
 if data == -1:
-    print("Name is already there in buffer")
+    print("Name is already there in database")
     sys.exit(0)
 elif data == -2:
     print("Username or password or data sent is in incorrect format")
