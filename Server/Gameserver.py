@@ -127,15 +127,18 @@ def room_creator():
 
 class player_game_room(Thread):
     
-    playerOneAtoms = []
-    playerTwoAtoms = []
-    grid = [[0]*10]*10
+    
     
 
     def __init__(self, play1, play2):
         Thread.__init__(self)
         self.play1=play1
         self.play2=play2
+        self.playerOneAtoms = []
+        self.playerTwoAtoms = []
+        self.grid = [[0]*10]*10
+        self.grid = [ ([0] * 10) for row in range(10)]
+        self.win_check = 0
 
     def deleteTheAtom(self, row, column):
         if (row, column) in self.playerOneAtoms:
@@ -149,6 +152,7 @@ class player_game_room(Thread):
             #We have to burst at two
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row+1][column] += 1
                 self.deleteTheAtom(row+1, column)
                 if player_turn == 1:
@@ -168,6 +172,7 @@ class player_game_room(Thread):
             #We have to burst at two
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row-1][column] += 1
                 self.deleteTheAtom(row-1, column)
                 if player_turn == 1:
@@ -186,6 +191,7 @@ class player_game_room(Thread):
         if (row == 0 and column == 9):
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row+1][column] += 1
                 self.deleteTheAtom(row+1, column)
                 if player_turn == 1:
@@ -205,6 +211,7 @@ class player_game_room(Thread):
         if (row == 9 and column == 9):
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row-1][column] += 1
                 self.deleteTheAtom(row-1, column)
                 if player_turn == 1:
@@ -224,6 +231,7 @@ class player_game_room(Thread):
             #We now check for three
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row+1][column] += 1
                 self.deleteTheAtom(row+1, column)
                 if player_turn == 1:
@@ -249,6 +257,7 @@ class player_game_room(Thread):
         if (row == 9 and column >=1 and column <=8):
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row-1][column] += 1
                 self.deleteTheAtom(row-1, column)
                 if player_turn == 1:
@@ -274,6 +283,7 @@ class player_game_room(Thread):
         if (column == 9 and row >=1 and row <=8):
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row-1][column] += 1
                 self.deleteTheAtom(row-1, column)
                 if player_turn == 1:
@@ -300,6 +310,7 @@ class player_game_room(Thread):
         if (column == 0 and row >=1 and row <=8):
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
+                self.deleteTheAtom(row, column)
                 self.grid[row-1][column] += 1
                 self.deleteTheAtom(row-1, column)
                 if player_turn == 1:
@@ -326,18 +337,27 @@ class player_game_room(Thread):
             self.checkForTheFour(row, column, player_turn)
 
     
-    def checkForWin(self):
-        if(len(self.playerOneAtoms) == 0):
+    def checkForWin(self, turn):
+        if len(self.playerOneAtoms) == 0 and turn > 2:
+            #Player two won
             print("Player 2 won")
-        elif(len(self.playerTwoAtoms) == 0):
+            self.win_check = 2
+
+        elif len(self.playerTwoAtoms) == 0 and turn > 2:
+            #player one won
             print("Player 1 won")
+            self.win_check = 1
+        
         else:
-            return  
+            print("The game is still going on")
+            self.win_check = 0
+
 
 
     def checkForTheFour(self,row, column, player_turn):
         if(self.grid[row][column] == 4):
             self.grid[row][column] = 0
+            self.deleteTheAtom(row, column)
             self.grid[row+1][column] += 1
             self.deleteTheAtom(row+1, column)
             if player_turn == 1:
@@ -412,15 +432,20 @@ class player_game_room(Thread):
         data=pickle.dumps(first)
         player1.send(data)
         player2.send(data)
-
+        counter = 0
+        win_player = 0
         turn=1
         while True:
-            print("This executes\n")
+            self.checkForWin(counter)
+            print("Value of win_player is: \n", win_player)
             if turn%2 == 1:
                 #New dictionary
                 signal_and_data = []
                 signal_and_data.append(0)
                 signal_and_data.append(self.playerTwoAtoms)
+                signal_and_data.append(self.grid)
+                signal_and_data.append(self.playerOneAtoms)
+                signal_and_data.append(self.win_check)
                 player2.send(pickle.dumps(signal_and_data))
                 signal_and_data[0] = 1
                 player1.send(pickle.dumps(signal_and_data))
@@ -477,6 +502,7 @@ class player_game_room(Thread):
 
                 #processing grid data
                 turn=turn+1
+                counter=counter+1
                 grid_data=recv_data[3]
                 flag=1
                 if not self.check_grid(grid_data, recv_data[1], recv_data[2]):
@@ -495,11 +521,14 @@ class player_game_room(Thread):
                 #recvdata = player2.recv(1024)
                 #if pickle.loads(recvdata) ==1:
             else:
-
+                self.checkForWin(counter)
                 #New dictionary
                 signal_and_data = []
                 signal_and_data.append(0)
                 signal_and_data.append(self.playerOneAtoms)
+                signal_and_data.append(self.grid)
+                signal_and_data.append(self.playerTwoAtoms)
+                signal_and_data.append(self.win_check)
                 player1.send(pickle.dumps(signal_and_data))
                 signal_and_data[0] = 1
                 player2.send(pickle.dumps(signal_and_data))
@@ -555,6 +584,7 @@ class player_game_room(Thread):
 
                 #processing grid data
                 turn=turn+1
+                counter=counter+1
                 grid_data=recv_data[3]
                 flag=1
                 if not self.check_grid(grid_data, recv_data[1], recv_data[2]):
