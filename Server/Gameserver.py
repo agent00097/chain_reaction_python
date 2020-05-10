@@ -70,7 +70,18 @@ def client_specific_server(portn, clientname):
     
     inputd = connssl.recv(1024)
     #data = pickle.loads(inputd)
-
+    mycursor.execute("SELECT * FROM user WHERE name = %s;",(clientname,))
+    x = mycursor.fetchone()
+    a=[]
+    a.append(x[2])
+    a.append(x[3])
+    a.append(x[4])
+    mycursor.execute("SELECT * FROM games WHERE player1=%s OR player2=%s;",(clientname,clientname,))
+    myresult = mycursor.fetchall()
+    for x in myresult:
+        a.append(x[3])
+    sentence=pickle.dumps(a)
+    connssl.send(sentence)
     sentence=pickle.dumps("You are added in Buffer")
     connssl.send(sentence)
     lock_buf.acquire()
@@ -601,54 +612,88 @@ while True:
         
         if sentence:
             data=pickle.loads(sentence)
-            if data[0]=="logon":
-                if namereg.match(data[1]) is None or regpass.match(data[2]) is None:
-                    data=-1
+            data_send=1
+            if len(data)!=5:
+                data_send=-2
+            elif namereg.match(data[1]) is None or regpass.match(data[2]) is None:
+                #username or passord format is incorrect
+                data_send=-2
+            elif data[0]=="logon":
+                mycursor.execute("SELECT * FROM user WHERE name = %s;",(data[1],))
+                x = mycursor.fetchone()
+                if x is None:
+                    hash_pw=hash_password(data[2])
+                    val_recv=(data[1],hash_pw,0,0,0)
+                    sql="INSERT INTO user (name, password,win,loss,draw) VALUES (%s, %s,%s, %s, %s);"
+                    mycursor.execute(sql, val_recv)
+                    
+                    ipand=[]
+                    ipand.append(data[2])
+                    ipand.append(data[3])
+
+                    if ports > 64000:
+                        ports=60000
+                    while ports in occupied_ports:
+                        ports=ports+1    
+                    
+                    occupied_ports.append(ports)
+                    ipand.append(ports)
+                    #ipand.append(1)
+                    userlist[data[1]]=ipand
+                    currport=ports
+                    currname=data[1]
+                    ports=ports+1
+                    data_send=1
                 else:
-                    mycursor.execute("SELECT * FROM user WHERE name = %s;",(data[1],))
-                    x = mycursor.fetchone()
-                    if x is None:
-                        
-                        
-
-
-
-            if data[0] not in userlist:
-
-                ipand=[]
-                ipand.append(data[2])
-                ipand.append(data[3])
-                
-
-                if ports > 64000:
-                    ports=60000
-                while ports in occupied_ports:
-                    ports=ports+1    
-                
-                occupied_ports.append(ports)
-                ipand.append(ports)
-                ipand.append(1)
-                userlist[data[0]]=ipand
-                
-                currport=ports
-                currname=data[0]
-                ports=ports+1
-            
-            else:
-                data=-1
+                    #username is already present
+                    data_send=-1
+            elif data[0]=="login":
+                mycursor.execute("SELECT * FROM user WHERE name = %s;",(data[1],))
+                x = mycursor.fetchone()
+                if x is None:
+                    #username is not in data base for login
+                    data_send=-3
+                else :
+                    temp_hash=x[1]
+                    if verify_password(x[1], data[2]):
+                        if data[1] not in userlist:
+                            ipand=[]
+                            ipand.append(data[2])
+                            ipand.append(data[3])
+                            if ports > 64000:
+                                ports=60000
+                            while ports in occupied_ports:
+                                ports=ports+1    
+                            
+                            occupied_ports.append(ports)
+                            ipand.append(ports)
+                            #ipand.append(1)
+                            userlist[data[1]]=ipand
+                            currport=ports
+                            currname=data[1]
+                            ports=ports+1
+                            data_send=1
+                        else:
+                            currport=userlist[data[1]][2]
+                            data_send=2  
+                    else:
+                        #password is incorrect
+                        data_send=-4
         
-        print("Recieved = "+client_address[0]+" : "+str(client_address[1]))
-        #data="dad"
-        sentence=pickle.dumps(currport)
-        connstream.send(sentence)
-        #connstream.shutdown(SHUT_RDWR)
+            print("Recieved = "+client_address[0]+" : "+str(client_address[1]))
+            if data_send!=1:
+                currport=data_send        
+            sentence=pickle.dumps(currport)
+            connstream.send(sentence)
+        
         connstream.close()
-        #connection.close()
-        if data != -1:
+        if data_send==1:
 
             t=Thread(target=client_specific_server, args=(currport,currname,))
             t.start()
     except:
-        print("Error")
-        sys.exit(0)
+        print("Connection Error")
+        connstream.close()
+
+        #sys.exit(0)
         

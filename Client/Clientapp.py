@@ -127,6 +127,16 @@ except:
 if data == -1:
     print("Name is already there in buffer")
     sys.exit(0)
+elif data == -2:
+    print("Username or password or data sent is in incorrect format")
+    sys.exit(0)
+elif data== -3:
+    print("Username is not there in database")
+    sys.exit(0)
+elif data== -4:
+    print("Password is incoorect")
+    sys.exit(0)
+
 
 #Create a new client socket to create a connection with server on the server given port
 clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -147,6 +157,11 @@ data=pickle.dumps(1)
 ssl_sock.send(data)
 modifieddata = ssl_sock.recv(1024)
 data=pickle.loads(modifieddata) 
+for x in data:
+    print(x)
+
+modifieddata = ssl_sock.recv(1024)
+data=pickle.loads(modifieddata)
 print(data)
 
 
