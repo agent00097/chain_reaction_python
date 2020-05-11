@@ -7,7 +7,7 @@ import mysql.connector
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  passwd="root",
+  passwd="",
   database="gameserver"
 )
 mycursor = mydb.cursor()
@@ -206,7 +206,7 @@ class player_game_room(Thread):
                     self.playerTwoAtoms.append(tuple([row, column+1]))
                 self.checkForRowAndColumn(row, column+1, player_turn)
 
-        if (row == 9 and column == 0):
+        if (row == 8 and column == 0):
             #We have to burst at two
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
@@ -226,7 +226,7 @@ class player_game_room(Thread):
                     self.playerTwoAtoms.append(tuple([row+1, column+1]))
                 self.checkForRowAndColumn(row, column+1, player_turn)
 
-        if (row == 0 and column == 9):
+        if (row == 0 and column == 8):
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
                 self.deleteTheAtom(row, column)
@@ -246,7 +246,7 @@ class player_game_room(Thread):
                 self.checkForRowAndColumn(row, column-1, player_turn)
 
 
-        if (row == 9 and column == 9):
+        if (row == 8 and column == 8):
             if(self.grid[row][column] == 2):
                 self.grid[row][column] = 0
                 self.deleteTheAtom(row, column)
@@ -265,7 +265,7 @@ class player_game_room(Thread):
                     self.playerTwoAtoms.append(tuple([row, column-1]))
                 self.checkForRowAndColumn(row, column-1, player_turn)
 
-        if (row == 0 and column >=1 and column <=8):
+        if (row == 0 and column >=1 and column <=7):
             #We now check for three
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
@@ -292,7 +292,7 @@ class player_game_room(Thread):
                     self.playerTwoAtoms.append(tuple([row, column-1]))
                 self.checkForRowAndColumn(row, column-1, player_turn)
 
-        if (row == 9 and column >=1 and column <=8):
+        if (row == 8 and column >=1 and column <=7):
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
                 self.deleteTheAtom(row, column)
@@ -318,7 +318,7 @@ class player_game_room(Thread):
                     self.playerTwoAtoms.append(tuple([row, column-1]))
                 self.checkForRowAndColumn(row, column-1, player_turn)
 
-        if (column == 9 and row >=1 and row <=8):
+        if (column == 8 and row >=1 and row <=7):
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
                 self.deleteTheAtom(row, column)
@@ -345,7 +345,7 @@ class player_game_room(Thread):
                 self.checkForRowAndColumn(row, column-1, player_turn)
 
 
-        if (column == 0 and row >=1 and row <=8):
+        if (column == 0 and row >=1 and row <=7):
             if(self.grid[row][column] == 3):
                 self.grid[row][column] = 0
                 self.deleteTheAtom(row, column)
