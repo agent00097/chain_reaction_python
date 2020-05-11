@@ -100,7 +100,7 @@ def connect_and_check_server(loginlogon,usern,pasw):
     try:
         ssl_sock.connect((serverName,serverPort))
     except:
-        print("Connection Error")
+        print("Connection Error in first one")
         sys.exit(0)
 
     ######Printing SSL data like, server's machine name , type of cyphers in use, SSL certificate 
@@ -139,6 +139,7 @@ def connect_and_check_server(loginlogon,usern,pasw):
     return data_temp
 
 data=connect_and_check_server(logon_or_login,username,passw)
+print(data)
 #Create a new client socket to create a connection with server on the server given port
 clientSocket = socket(AF_INET, SOCK_STREAM)
 try:
@@ -148,9 +149,9 @@ except:
     sys.exit(0)
 
 try:
-    ssl_sock.connect((serverName,int(data)))
+    ssl_sock.connect(("127.0.0.1",int(data)))
 except:
-    print("Connection error")
+    print("Connection error 11")
     sys.exit(0)
 
 #Sending some data to server (To tell server the new client connection is ready)

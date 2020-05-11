@@ -7,7 +7,7 @@ import mysql.connector
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  passwd="",
+  passwd="root",
   database="gameserver"
 )
 mycursor = mydb.cursor()
@@ -606,6 +606,37 @@ class player_game_room(Thread):
 
                     #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                     if recv_data[0] == 1:
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player1,"Not found")
+                        lock_buf.release() 
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                if updated_player1 in connbuffer:
+                                    player1=connbuffer[updated_player1]
+                                    player1.send(pickle.dumps("Ready"))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(signal_and_data))
+                                    recvdata = player1.recv(1024)
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player1,"Not found")
+                                lock_buf.acquire()
+                                
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=2
+                            break
+                            
+
                         print("DEBUG: player 1 clicked on the exit button")
                         #this the quit command, this client has exited the game
                         print("This player wants to quit the game")
@@ -787,6 +818,36 @@ class player_game_room(Thread):
                     
                     #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                     if recv_data[0] == 1:
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player2,"Not found")
+                        lock_buf.release() 
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player2 in connbuffer:
+                                    player2=connbuffer[updated_player2]
+                                    player2.send(pickle.dumps("Ready"))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(signal_and_data))
+                                    recvdata = player2.recv(1024)
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player2,"Not found")
+                                lock_buf.acquire()
+
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=1
+                            break
                         #this the quit command, this client has exited the game
                         print("This player wants to quit the game")
                     if recv_data[0] == 2:
@@ -956,8 +1017,11 @@ while True:
                             ports=ports
                             data_send=1
                         else:
-                            currport=userlist[data[1]][2]
-                            data_send=2  
+                            if data[1] in connbuffer:
+                                data_send=-1
+                            else:
+                                currport=userlist[data[1]][2]
+                                data_send=2  
                     else:
                         #password is incorrect
                         data_send=-4
