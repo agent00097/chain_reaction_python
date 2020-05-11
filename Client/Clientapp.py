@@ -5,7 +5,7 @@ import sys
 import ssl
 import pprint
 import pygame
-from tkinter import *   
+from tkinter import messagebox 
 
 # Define some colors
 LIGHT_RED = (255, 180, 180)
@@ -251,7 +251,7 @@ def checkForRowAndColumn(row, column, player_turn):
                 otherPlayerAtoms.append(tuple([row, column+1]))
             checkForRowAndColumn(row, column+1, player_turn)
 
-    if (row == 9 and column == 0):
+    if (row == 8 and column == 0):
         #We have to burst at two
         if(grid[row][column] == 2):
             grid[row][column] = 0
@@ -271,7 +271,7 @@ def checkForRowAndColumn(row, column, player_turn):
                 otherPlayerAtoms.append(tuple([row+1, column+1]))
             checkForRowAndColumn(row, column+1, player_turn)
 
-    if (row == 0 and column == 9):
+    if (row == 0 and column == 8):
         if(grid[row][column] == 2):
             grid[row][column] = 0
             deleteTheAtom(row,column)
@@ -291,7 +291,7 @@ def checkForRowAndColumn(row, column, player_turn):
             checkForRowAndColumn(row, column-1, player_turn)
 
 
-    if (row == 9 and column == 9):
+    if (row == 8 and column == 8):
         if(grid[row][column] == 2):
             grid[row][column] = 0
             deleteTheAtom(row,column)
@@ -310,7 +310,7 @@ def checkForRowAndColumn(row, column, player_turn):
                 otherPlayerAtoms.append(tuple([row, column-1]))
             checkForRowAndColumn(row, column-1, player_turn)
 
-    if (row == 0 and column >=1 and column <=8):
+    if (row == 0 and column >=1 and column <=7):
         #We now check for three
         if(grid[row][column] == 3):
             grid[row][column] = 0
@@ -337,7 +337,7 @@ def checkForRowAndColumn(row, column, player_turn):
                 otherPlayerAtoms.append(tuple([row, column-1]))
             checkForRowAndColumn(row, column-1, player_turn)
 
-    if (row == 9 and column >=1 and column <=8):
+    if (row == 8 and column >=1 and column <=7):
         if(grid[row][column] == 3):
             grid[row][column] = 0
             deleteTheAtom(row,column)
@@ -363,7 +363,7 @@ def checkForRowAndColumn(row, column, player_turn):
                 otherPlayerAtoms.append(tuple([row, column-1]))
             checkForRowAndColumn(row, column-1, player_turn)
 
-    if (column == 9 and row >=1 and row <=8):
+    if (column == 8 and row >=1 and row <=7):
         if(grid[row][column] == 3):
             grid[row][column] = 0
             deleteTheAtom(row,column)
@@ -390,7 +390,7 @@ def checkForRowAndColumn(row, column, player_turn):
             checkForRowAndColumn(row, column-1, player_turn)
 
 
-    if (column == 0 and row >=1 and row <=8):
+    if (column == 0 and row >=1 and row <=7):
         if(grid[row][column] == 3):
             grid[row][column] = 0
             deleteTheAtom(row,column)

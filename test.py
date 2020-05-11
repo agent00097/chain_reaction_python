@@ -4,7 +4,7 @@ import hashlib,os,binascii
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  passwd="root",
+  passwd="",
   database="gameserver"
 )
 def hash_password(password):
