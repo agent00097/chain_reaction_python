@@ -72,69 +72,73 @@ else:
 
 
 #Adding username, machine's ipaddress and the machine's name to a variable  b to send to server
-b.append(logon_or_login)
-b.append(username)
-b.append(passw)
-b.append(gethostbyname(gethostname()))
-b.append(gethostname())
+def connect_and_check_server(loginlogon,usern,pasw):
+    b.append(loginlogon)
+    b.append(usern)
+    b.append(pasw)
+    b.append(gethostbyname(gethostname()))
+    b.append(gethostname())
 
-#convert the list "b" into a byte format using pickle and store it in a variable named "data"
-data=pickle.dumps(b)
+    #convert the list "b" into a byte format using pickle and store it in a variable named "data"
+    data_temp=pickle.dumps(b)
 
-#Creating a socket and setting the socket timeout as 10 seconds 
-serverName = '127.0.0.1'
-serverPort = 49999
-clientSocket = socket(AF_INET, SOCK_STREAM)
-#clientSocket.bind(("127.0.0.1", 40000))
-clientSocket.settimeout(10)
+    #Creating a socket and setting the socket timeout as 10 seconds 
+    serverName = '127.0.0.1'
+    serverPort = 49999
+    clientSocket = socket(AF_INET, SOCK_STREAM)
+    #clientSocket.bind(("127.0.0.1", 40000))
+    clientSocket.settimeout(10)
 
-#Using ssl with socket
-try:
-    ssl_sock = ssl.wrap_socket(clientSocket,ca_certs="server.crt",cert_reqs=ssl.CERT_REQUIRED)
-except:
-    print("SSL error in wrap sockets")
-    sys.exit(0)
+    #Using ssl with socket
+    try:
+        ssl_sock = ssl.wrap_socket(clientSocket,ca_certs="server.crt",cert_reqs=ssl.CERT_REQUIRED)
+    except:
+        print("SSL error in wrap sockets")
+        sys.exit(0)
 
-#Creating a connection with server
-try:
-    ssl_sock.connect((serverName,serverPort))
-except:
-    print("Connection Error")
-    sys.exit(0)
+    #Creating a connection with server
+    try:
+        ssl_sock.connect((serverName,serverPort))
+    except:
+        print("Connection Error")
+        sys.exit(0)
 
-######Printing SSL data like, server's machine name , type of cyphers in use, SSL certificate 
-print (repr(ssl_sock.getpeername()))
-print (ssl_sock.cipher())
-print (pprint.pformat(ssl_sock.getpeercert()))
-######Printing SSL (It is not really important, it's for the sake of debugging)
-
-
-try:
-    ssl_sock.send(data)
-    modifieddata = ssl_sock.recv(1024)
-    data=pickle.loads(modifieddata) 
-    
-    print(data)
-    ssl_sock.close()
-except:
-    print("Error in sending or receiving data")
-    sys.exit(0)
-
-#username is already present 
-if data == -1:
-    print("Name is already there in database")
-    sys.exit(0)
-elif data == -2:
-    print("Username or password or data sent is in incorrect format")
-    sys.exit(0)
-elif data== -3:
-    print("Username is not there in database")
-    sys.exit(0)
-elif data== -4:
-    print("Password is incoorect")
-    sys.exit(0)
+    ######Printing SSL data like, server's machine name , type of cyphers in use, SSL certificate 
+    print (repr(ssl_sock.getpeername()))
+    print (ssl_sock.cipher())
+    print (pprint.pformat(ssl_sock.getpeercert()))
+    ######Printing SSL (It is not really important, it's for the sake of debugging)
 
 
+    try:
+        ssl_sock.send(data_temp)
+        modifieddata = ssl_sock.recv(1024)
+        data_temp=pickle.loads(modifieddata) 
+        
+        print(data_temp)
+        ssl_sock.close()
+    except:
+        print("Error in sending or receiving data")
+        sys.exit(0)
+
+    #username is already present 
+    if data_temp == -1:
+        print("Name is already there in database")
+        sys.exit(0)
+    elif data_temp == -2:
+        print("Username or password or data sent is in incorrect format")
+        sys.exit(0)
+    elif data_temp== -3:
+        print("Username is not there in database")
+        sys.exit(0)
+    elif data_temp== -4:
+        print("Password is incorect")
+        sys.exit(0)
+    else:
+        print("You are connected successfully ")
+    return data_temp
+
+data=connect_and_check_server(logon_or_login,username,passw)
 #Create a new client socket to create a connection with server on the server given port
 clientSocket = socket(AF_INET, SOCK_STREAM)
 try:
