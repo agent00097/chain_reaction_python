@@ -75,6 +75,7 @@ def client_specific_server(portn, clientname,recon_flag):
         return
     try:
         connssl = ssl.wrap_socket(connect,server_side=True,certfile="server.crt", keyfile="server.key")
+        connssl.settimeout(300)
     except:
         connssl.close()
         return
@@ -450,19 +451,11 @@ class player_game_room(Thread):
     def run(self):
 
         
-
-        if random.randrange(1,3) == 1:
-            player1=connbuffer[self.play1]
-            player2=connbuffer[self.play2]
-            updated_player1=self.play1
-            updated_player2=self.play2
-            first=self.play1
-        else:
-            player2=connbuffer[self.play1]
-            player1=connbuffer[self.play2]
-            updated_player1=self.play2
-            updated_player2=self.play1
-            first=self.play2
+        player1=connbuffer[self.play1]
+        player2=connbuffer[self.play2]
+        updated_player1=self.play1
+        updated_player2=self.play2
+        first=self.play1
 
         data=pickle.dumps("Ready")
         player1.send(data)
@@ -493,9 +486,11 @@ class player_game_room(Thread):
                     try:
                         player2.send(pickle.dumps(signal_and_data))
                     except:
+                        print("Conn error, remove play2 conn and try reconnection 1")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player2,"Not found")
                         lock_buf.release() 
+                        print(updated_player2+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -503,6 +498,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player2 in connbuffer:
+                                    print(updated_player2 + " Readded")
                                     player2=connbuffer[updated_player2]
                                     player2.send(pickle.dumps("Ready"))
                                     player2.send(pickle.dumps(updated_player1))
@@ -529,10 +525,15 @@ class player_game_room(Thread):
                     signal_and_data[0] = 1
                     try:
                         player1.send(pickle.dumps(signal_and_data))
-                    except:
+                    except timeout:
+                        winner=2
+                        break
+                    except error:
+                        print("Conn error, remove play1 conn and try reconnection 2")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player1,"Not found")
                         lock_buf.release() 
+                        print(updated_player1+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -540,6 +541,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player1 in connbuffer:
+                                    print(updated_player2+" readded")
                                     player1=connbuffer[updated_player1]
                                     player1.send(pickle.dumps("Ready"))
                                     player1.send(pickle.dumps(updated_player1))
@@ -566,10 +568,15 @@ class player_game_room(Thread):
 
                     try:
                         recvdata = player1.recv(1024)
-                    except:
+                    except timeout:
+                        winner=2
+                        break
+                    except error:
+                        print("Conn error, remove play1 conn and try reconnection 3")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player1,"Not found")
                         lock_buf.release() 
+                        print(updated_player1+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -577,6 +584,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player1 in connbuffer:
+                                    print(updated_player2+" readded")
                                     player1=connbuffer[updated_player1]
                                     player1.send(pickle.dumps("Ready"))
                                     player1.send(pickle.dumps(updated_player1))
@@ -606,15 +614,18 @@ class player_game_room(Thread):
 
                     #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                     if recv_data[0] == 1:
+                        print("Conn error, remove play1 conn and try reconnection 4")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player1,"Not found")
-                        lock_buf.release() 
+                        lock_buf.release()
+                        print(updated_player1+" removed") 
                         connected= False
                         tic=time.time()
                         tac=time.time()
                         while not connected and (tac-tic) < 300:
                             try:
                                 if updated_player1 in connbuffer:
+                                    print(updated_player1+" readded")
                                     player1=connbuffer[updated_player1]
                                     player1.send(pickle.dumps("Ready"))
                                     player1.send(pickle.dumps(updated_player1))
@@ -707,9 +718,11 @@ class player_game_room(Thread):
                     try:
                         player1.send(pickle.dumps(signal_and_data))
                     except:
+                        print("Conn error, remove play1 conn and try reconnection 5")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player1,"Not found")
                         lock_buf.release() 
+                        print(updated_player1+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -717,6 +730,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player1 in connbuffer:
+                                    print(updated_player1+" readded")
                                     player1=connbuffer[updated_player1]
                                     player1.send(pickle.dumps("Ready"))
                                     player1.send(pickle.dumps(updated_player1))
@@ -744,9 +758,11 @@ class player_game_room(Thread):
                     try:
                         player2.send(pickle.dumps(signal_and_data))
                     except:
+                        print("Conn error, remove play2 conn and try reconnection 6")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player2,"Not found")
                         lock_buf.release() 
+                        print(updated_player2+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -754,6 +770,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player2 in connbuffer:
+                                    print(updated_player2+" removed")
                                     player2=connbuffer[updated_player2]
                                     player2.send(pickle.dumps("Ready"))
                                     player2.send(pickle.dumps(updated_player1))
@@ -777,10 +794,15 @@ class player_game_room(Thread):
                     print("Data sent to player 2\n")
                     try:
                         recvdata = player2.recv(1024)
-                    except:
+                    except timeout:
+                        winner=1
+                        break
+                    except error:
+                        print("Conn error, remove play2 conn and try reconnection 7")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player2,"Not found")
                         lock_buf.release() 
+                        print(updated_player2+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -788,6 +810,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player2 in connbuffer:
+                                    print(updated_player2+" readded")
                                     player2=connbuffer[updated_player2]
                                     player2.send(pickle.dumps("Ready"))
                                     player2.send(pickle.dumps(updated_player1))
@@ -818,9 +841,11 @@ class player_game_room(Thread):
                     
                     #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                     if recv_data[0] == 1:
+                        print("Conn error, remove play2 conn and try reconnection 8 ")
                         lock_buf.acquire()
                         ele=connbuffer.pop(updated_player2,"Not found")
                         lock_buf.release() 
+                        print(updated_player2+" removed")
                         connected= False
                         tic=time.time()
                         tac=time.time()
@@ -828,6 +853,7 @@ class player_game_room(Thread):
                             try:
                                 
                                 if updated_player2 in connbuffer:
+                                    print(updated_player2+" readded")
                                     player2=connbuffer[updated_player2]
                                     player2.send(pickle.dumps("Ready"))
                                     player2.send(pickle.dumps(updated_player1))
@@ -950,6 +976,9 @@ while True:
         sentence = connstream.recv(1024)
         
         if sentence:
+            if len(sentence)<10:
+                connstream.close()
+                continue
             data=pickle.loads(sentence)
             data_send=1
             if len(data)!=5:
@@ -1021,6 +1050,7 @@ while True:
                                 data_send=-1
                             else:
                                 currport=userlist[data[1]][2]
+                                currname=data[1]
                                 data_send=2  
                     else:
                         #password is incorrect
