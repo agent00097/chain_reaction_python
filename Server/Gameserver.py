@@ -1,4 +1,4 @@
-import pickle, re, time, random, sys, ssl
+import pickle, re, time, random, sys, ssl, time
 from socket import *
 import hashlib,os,binascii
 from threading import Thread, Lock
@@ -57,37 +57,73 @@ def verify_password(stored_password, provided_password):
     return pwdhash == stored_password
 
 
-def client_specific_server(portn, clientname):
+def client_specific_server(portn, clientname,recon_flag):
     lhost="127.0.0.1"
     port= portn
     print(clientname)
-    serversock = socket(AF_INET, SOCK_STREAM)
-    serversock.bind((lhost, port))
-    serversock.listen(1)
+    try:
+        serversock = socket(AF_INET, SOCK_STREAM)
+        serversock.bind((lhost, port))
+        serversock.listen(1)
+    except:
+        return
     #while True:
-    connect, clientadd = serversock.accept()
-    connssl = ssl.wrap_socket(connect,server_side=True,certfile="server.crt", keyfile="server.key")
-    
-    inputd = connssl.recv(1024)
+    try:
+        connect, clientadd = serversock.accept()
+    except:
+        connect.close()
+        return
+    try:
+        connssl = ssl.wrap_socket(connect,server_side=True,certfile="server.crt", keyfile="server.key")
+        connssl.settimeout(300)
+    except:
+        connssl.close()
+        return
+    try:
+        inputd = connssl.recv(1024)
+    except:
+        connssl.close()
+        return
     #data = pickle.loads(inputd)
-    mycursor.execute("SELECT * FROM user WHERE name = %s;",(clientname,))
-    x = mycursor.fetchone()
-    a=[]
-    a.append(x[2])
-    a.append(x[3])
-    a.append(x[4])
-    mycursor.execute("SELECT * FROM games WHERE player1=%s OR player2=%s;",(clientname,clientname,))
-    myresult = mycursor.fetchall()
-    for x in myresult:
+    try:
+        mycursor.execute("SELECT * FROM user WHERE name = %s;",(clientname,))
+        x = mycursor.fetchone()
+        a=[]
+        a.append(x[2])
         a.append(x[3])
-    sentence=pickle.dumps(a)
-    connssl.send(sentence)
-    sentence=pickle.dumps("You are added in Buffer")
-    connssl.send(sentence)
+        a.append(x[4])
+        mycursor.execute("SELECT * FROM games WHERE player1=%s OR player2=%s;",(clientname,clientname,))
+        myresult = mycursor.fetchall()
+        for x in myresult:
+            a.append(x[3])
+        sentence=pickle.dumps(a)
+    except:
+        connssl.close()
+        return
+    try:    
+        connssl.send(sentence)
+    except:
+        connssl.close()
+        return
+
+    if recon_flag==1:
+        sentence=pickle.dumps("You are added in Buffer")
+    else:
+        sentence=pickle.dumps("Reconnecting to your game")
+
+    try:
+        connssl.send(sentence)
+    except:
+        connssl.close()
+        return
+
     lock_buf.acquire()
-    buffer.append(clientname)
+    #userlist[clientname].append(serversock)
+    if recon_flag == 1:
+        buffer.append(clientname)
     connbuffer[clientname]=connssl
     lock_buf.release()
+    return
     #connbuffer[clientname].close()
 
 
@@ -100,7 +136,10 @@ def room_creator():
             lock_buf.release()
             for c in buffer:
                 data=pickle.dumps("Waiting for another user")
-                connbuffer[c].send(data)
+                try:
+                    connbuffer[c].send(data)
+                except:
+                    print(str(c)+" is down.")
         elif n==0:
             lock_buf.release()
 
@@ -338,15 +377,21 @@ class player_game_room(Thread):
 
     
     def checkForWin(self, turn):
+
+        #Need to add the value of win in the database
+
         if len(self.playerOneAtoms) == 0 and turn > 2:
             #Player two won
             print("Player 2 won")
             self.win_check = 2
+            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
+
 
         elif len(self.playerTwoAtoms) == 0 and turn > 2:
             #player one won
             print("Player 1 won")
             self.win_check = 1
+            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
         
         else:
             print("The game is still going on")
@@ -412,15 +457,11 @@ class player_game_room(Thread):
     def run(self):
 
         
-
-        if random.randrange(1,3) == 1:
-            player1=connbuffer[self.play1]
-            player2=connbuffer[self.play2]
-            first=self.play1
-        else:
-            player2=connbuffer[self.play1]
-            player1=connbuffer[self.play2]
-            first=self.play2
+        player1=connbuffer[self.play1]
+        player2=connbuffer[self.play2]
+        updated_player1=self.play1
+        updated_player2=self.play2
+        first=self.play1
 
         data=pickle.dumps("Ready")
         player1.send(data)
@@ -437,42 +478,185 @@ class player_game_room(Thread):
         turn=1
         try: 
             while True:
+                ok = 0
                 self.checkForWin(counter)
-                print("DEBUG: Both the players should get this")
+                # print("DEBUG: Both the players should get this")
                 print("Value of win_player is: \n", win_player)
                 if turn%2 == 1:
                     #New dictionary
+                    print("DEBUG: My name is: ", str(player1))
                     signal_and_data = []
                     signal_and_data.append(0)
                     signal_and_data.append(self.playerTwoAtoms)
                     signal_and_data.append(self.grid)
                     signal_and_data.append(self.playerOneAtoms)
                     signal_and_data.append(self.win_check)
-                    player2.send(pickle.dumps(signal_and_data))
+
+                    try:
+                        player2.send(pickle.dumps(signal_and_data))
+                    except:
+                        print("Conn error, remove play2 conn and try reconnection 1")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player2,"Not found")
+                        lock_buf.release() 
+                        print(updated_player2+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player2 in connbuffer:
+                                    print(updated_player2 + " Readded")
+                                    player2=connbuffer[updated_player2]
+                                    player2.send(pickle.dumps("Ready"))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(signal_and_data))
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player2,"Not found")
+                                lock_buf.acquire()
+
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=1
+                            break
+
+                            
+                                
+
                     signal_and_data[0] = 1
-                    player1.send(pickle.dumps(signal_and_data))
+                    try:
+                        player1.send(pickle.dumps(signal_and_data))
+                    except timeout:
+                        winner=2
+                        break
+                    except error:
+                        print("Conn error, remove play1 conn and try reconnection 2")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player1,"Not found")
+                        lock_buf.release() 
+                        print(updated_player1+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player1 in connbuffer:
+                                    print(updated_player2+" readded")
+                                    player1=connbuffer[updated_player1]
+                                    player1.send(pickle.dumps("Ready"))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(signal_and_data))
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player1,"Not found")
+                                lock_buf.acquire()
+                                
+                                time.sleep(5)
+                                tac=time.time()
+
+                        if (tac-tic) >= 300 or not connected:
+                            winner=2
+                            break
+
+
                     print("Data sent to player 1\n")
 
-                    if self.win_check == 1 or self.win_check == 2:
-                        #Pasting the finally condition
-                        player1.close()
-                        player2.close()
+                    try:
+                        recvdata = player1.recv(1024)
+                    except timeout:
+                        winner=2
+                        break
+                    except error:
+                        print("Conn error, remove play1 conn and try reconnection 3")
                         lock_buf.acquire()
-                        element1=connbuffer.pop(self.play1,"nf")
-                        element1=connbuffer.pop(self.play2,"nf")
-                        element2=userlist.pop(self.play1,"nf")
-                        element2=userlist.pop(self.play2,"nf")
-                        lock_buf.release()
-                        
-                        
+                        ele=connbuffer.pop(updated_player1,"Not found")
+                        lock_buf.release() 
+                        print(updated_player1+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player1 in connbuffer:
+                                    print(updated_player2+" readded")
+                                    player1=connbuffer[updated_player1]
+                                    player1.send(pickle.dumps("Ready"))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(signal_and_data))
+                                    recvdata = player1.recv(1024)
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player1,"Not found")
+                                lock_buf.acquire()
+                                
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=2
+                            break
 
-                    recvdata = player1.recv(1024)
+
+
                     recv_data=pickle.loads(recvdata)
                     print("Data recieved by Player 1\n")
                     print(recv_data)
 
                     #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                     if recv_data[0] == 1:
+                        print("Conn error, remove play1 conn and try reconnection 4")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player1,"Not found")
+                        lock_buf.release()
+                        print(updated_player1+" removed") 
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                if updated_player1 in connbuffer:
+                                    print(updated_player1+" readded")
+                                    player1=connbuffer[updated_player1]
+                                    player1.send(pickle.dumps("Ready"))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(signal_and_data))
+                                    recvdata = player1.recv(1024)
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player1,"Not found")
+                                lock_buf.acquire()
+                                
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=2
+                            break
+                            
+
                         print("DEBUG: player 1 clicked on the exit button")
                         #this the quit command, this client has exited the game
                         print("This player wants to quit the game")
@@ -509,11 +693,7 @@ class player_game_room(Thread):
                                 # print("Click ", pos, "Grid coordinates: ", row, column)
                                 print("thisPlayerAtoms are: ", self.playerOneAtoms)
                                 print("otherPlayerAtoms are: ", self.playerTwoAtoms)
-
-                    
-                    
-                    
-                                
+  
 
                     #processing grid data
                     turn=turn+1
@@ -529,8 +709,12 @@ class player_game_room(Thread):
                     else:
                         print("It is incorrect")
                         flag=0
+                        ok = -1
                     
 
+                    print("DEBUG: Ok value is: ", ok)
+                    player1.send(pickle.dumps(ok))
+                    
                     #player1.send(pickle.dumps(flag))
                     # player1.send(pickle.dumps(1))
                     #recvdata = player2.recv(1024)
@@ -545,13 +729,123 @@ class player_game_room(Thread):
                     signal_and_data.append(self.grid)
                     signal_and_data.append(self.playerTwoAtoms)
                     signal_and_data.append(self.win_check)
-                    player1.send(pickle.dumps(signal_and_data))
+                    try:
+                        player1.send(pickle.dumps(signal_and_data))
+                    except:
+                        print("Conn error, remove play1 conn and try reconnection 5")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player1,"Not found")
+                        lock_buf.release() 
+                        print(updated_player1+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player1 in connbuffer:
+                                    print(updated_player1+" readded")
+                                    player1=connbuffer[updated_player1]
+                                    player1.send(pickle.dumps("Ready"))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(updated_player1))
+                                    player1.send(pickle.dumps(signal_and_data))
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player1,"Not found")
+                                lock_buf.acquire()
+                                
+                                time.sleep(5)
+                                tac=time.time()
+
+                        if (tac-tic) >= 300 or not connected:
+                            winner=2
+                            break
+                    
+                    
+                    
                     signal_and_data[0] = 1
-                    player2.send(pickle.dumps(signal_and_data))
+                    try:
+                        player2.send(pickle.dumps(signal_and_data))
+                    except:
+                        print("Conn error, remove play2 conn and try reconnection 6")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player2,"Not found")
+                        lock_buf.release() 
+                        print(updated_player2+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player2 in connbuffer:
+                                    print(updated_player2+" removed")
+                                    player2=connbuffer[updated_player2]
+                                    player2.send(pickle.dumps("Ready"))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(signal_and_data))
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player2,"Not found")
+                                lock_buf.acquire()
+
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=1
+                            break
+
                     print("Data sent to player 2\n")
+                    try:
+                        recvdata = player2.recv(1024)
+                    except timeout:
+                        winner=1
+                        break
+                    except error:
+                        print("Conn error, remove play2 conn and try reconnection 7")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player2,"Not found")
+                        lock_buf.release() 
+                        print(updated_player2+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player2 in connbuffer:
+                                    print(updated_player2+" readded")
+                                    player2=connbuffer[updated_player2]
+                                    player2.send(pickle.dumps("Ready"))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(signal_and_data))
+                                    recvdata = player2.recv(1024)
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player2,"Not found")
+                                lock_buf.acquire()
 
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=1
+                            break
 
-                    recvdata = player2.recv(1024)
                     recv_data=pickle.loads(recvdata)
                     print("Data recieved by Player 2\n")
                     print(recv_data)
@@ -561,6 +855,39 @@ class player_game_room(Thread):
                     
                     #After we've recieved the data first we will need to compute everything and make changes to our grid locally
                     if recv_data[0] == 1:
+                        print("Conn error, remove play2 conn and try reconnection 8 ")
+                        lock_buf.acquire()
+                        ele=connbuffer.pop(updated_player2,"Not found")
+                        lock_buf.release() 
+                        print(updated_player2+" removed")
+                        connected= False
+                        tic=time.time()
+                        tac=time.time()
+                        while not connected and (tac-tic) < 300:
+                            try:
+                                
+                                if updated_player2 in connbuffer:
+                                    print(updated_player2+" readded")
+                                    player2=connbuffer[updated_player2]
+                                    player2.send(pickle.dumps("Ready"))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(updated_player1))
+                                    player2.send(pickle.dumps(signal_and_data))
+                                    recvdata = player2.recv(1024)
+                                    connected=True
+                                else:
+                                    time.sleep(5)
+                                    tac=time.time()
+                            except:
+                                lock_buf.acquire()
+                                ele=connbuffer.pop(updated_player2,"Not found")
+                                lock_buf.acquire()
+
+                                time.sleep(5)
+                                tac=time.time()
+                        if (tac-tic) >= 300 or not connected:
+                            winner=1
+                            break
                         #this the quit command, this client has exited the game
                         print("This player wants to quit the game")
                     if recv_data[0] == 2:
@@ -613,16 +940,23 @@ class player_game_room(Thread):
                     else:
                         print("It is incorrect")
                         flag=0
+                        ok = -1
                     #player2.send(pickle.dumps(flag))
                     # player2.send(pickle.dumps(1))
                     # player2.send(recvdata)
                     #recvdata = player2.recv(1024)
                     #if pickle.loads(recvdata) ==1:
                     #Sending the data to player 2 let it know that you can resume now
-                    # player1.send(pickle.dumps(1))
+                    player2.send(pickle.dumps(ok))
         finally:
-            player1.close()
-            player2.close()
+            try:
+                player1.close()
+            except:
+                print("Error dropping connection")
+            try: 
+                player2.close()
+            except:
+                print("Error dropping connection")
             lock_buf.acquire()
             element1=connbuffer.pop(self.play1,"nf")
             element1=connbuffer.pop(self.play2,"nf")
@@ -659,6 +993,9 @@ while True:
         sentence = connstream.recv(1024)
         
         if sentence:
+            if len(sentence)<10:
+                connstream.close()
+                continue
             data=pickle.loads(sentence)
             data_send=1
             if len(data)!=5:
@@ -726,26 +1063,36 @@ while True:
                             ports=ports
                             data_send=1
                         else:
-                            currport=userlist[data[1]][2]
-                            data_send=2  
+                            if data[1] in connbuffer:
+                                data_send=-1
+                            else:
+                                currport=userlist[data[1]][2]
+                                currname=data[1]
+                                data_send=2  
                     else:
                         #password is incorrect
                         data_send=-4
         
             print("Recieved = "+client_address[0]+" : "+str(client_address[1]))
-            if data_send!=1:
+            if data_send!=1 and data_send!=2:
                 currport=data_send        
             sentence=pickle.dumps(currport)
             connstream.send(sentence)
         
         connstream.close()
         if data_send==1:
-
-            t=Thread(target=client_specific_server, args=(currport,currname,))
+            t=Thread(target=client_specific_server, args=(currport,currname,1,))
             t.start()
+        elif data_send==2:
+            t=Thread(target=client_specific_server, args=(currport,currname,2,))
+            t.start()
+
     except:
         print("Connection Error")
-        connstream.close()
+        try:
+            connstream.close()
+        except:
+            print("connection error")
 
         #sys.exit(0)
         
