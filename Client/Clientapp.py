@@ -479,7 +479,7 @@ def screenUpdate():
 
     for row in range(10):
             for column in range(10):
-                color = WHITE
+                color = BLACK
 
                 pygame.draw.rect(screen,
                                 color,
@@ -508,7 +508,7 @@ def screenUpdate():
                                 HEIGHT])
 
 
-    print("DEBUG: Just filled in all the cells according to this client")
+    # print("DEBUG: Just filled in all the cells according to this client")
 
         #This is to update the screen according to player two
     for row in range(10):
@@ -531,7 +531,7 @@ def screenUpdate():
                                 WIDTH,
                                 HEIGHT])
 
-    print("Just filled in the cells with red according to Opponent's data")
+    # print("Just filled in the cells with red according to Opponent's data")
         
         # clock.tick(60)
 
@@ -546,16 +546,19 @@ while not done:
     event_sent = 0
     signal_move = 0
     data_for_move = ssl_sock.recv(1024)
-    print("DEBUG: size for data_for_move, " ,len(data_for_move))
-    print("DEBUG: value of data ", data_for_move)
+    # print("DEBUG: size for data_for_move, " ,len(data_for_move))
+    # print("DEBUG: value of data ", data_for_move)
     signal_move_prime = pickle.loads(data_for_move)
     # signal_move = signal_move_prime["signal"]
-    print("Signal recieved from Server", signal_move_prime)
+    print("Signal recieved from Server", signal_move_prime[0])
 
 
     clock.tick(60)
 
-    screen.fill(GREEN)
+    screen.fill(LIGHT_GREEN_2)
+
+    pygame.mouse.set_visible(True)
+
     
 
     otherPlayerAtoms = signal_move_prime[1]
@@ -570,22 +573,45 @@ while not done:
 
 
 
-    if(signal_move_prime[4] == 1):
-        #player 1 won
-        Tk().wm_withdraw() #to hide the main window
-        messagebox.showinfo('Player One Won','Player One Won')
-        screen.quit()
+    
 
-    if(signal_move_prime[4] == 2):
-        #player 1 won
-        Tk().wm_withdraw() #to hide the main window
-        messagebox.showinfo('Player Two Won','Player Two Won')
-        screen.quit() 
+    # if signal_move_prime[0] == 0:
+    #     screen.fill(RED)
+    #     screenUpdate()
+    #     pygame.display.flip()
+    #     #When it's not the player's turn
+    #     print("DEBUG: This is not my turn")
+    #     another_flag_here = 0
+    #     another_flag = ssl_sock.recv(1024)
+    #     another_flag_here = pickle.loads(another_flag)
+    #     print("DEBUG: Now i can play")
+    #     if another_flag_here == 1:
+    #         continue
 
     # print(type(signal_move_prime))
-    while signal_move_prime[0] == 1:
-        
 
+    print("DEBUG: This is before checking win condition, both the player should get this, win valus is: ", signal_move_prime[4])
+
+    if(signal_move_prime[4] == 1):
+        #player 1 won
+        # Tk().wm_withdraw() #to hide the main window
+        messagebox.showinfo('Player One Won','Player One Won')
+
+    if(signal_move_prime[4] == 2):
+        #player 2 won
+        # Tk().wm_withdraw() #to hide the main window
+        messagebox.showinfo('Player Two Won','Player Two Won')
+
+
+
+
+    while signal_move_prime[0] == 1:
+
+        print("DEBUG: Got back in, since player clicked on the wrong cell")
+
+        works = 0
+        
+        # print("DEBUG: This is where I am filling the screen green")
         screen.fill(GREEN)
         
 
@@ -603,7 +629,7 @@ while not done:
                     pos = pygame.mouse.get_pos()
                     flag=1
 
-        works = 0
+        
        
                
 
@@ -627,29 +653,32 @@ while not done:
                     print("It is already in the block")   
                     # Set that location to one
                     grid[row][column] = int(grid[row][column]) + 1
-                    print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
+                    # print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
                     turn = turn + 1
                     checkForRowAndColumn(row, column, 1)
-                    print("Click ", pos, "Grid coordinates: ", row, column)
-                    print("thisPlayerAtoms are: ", thisPlayerAtoms)
-                    print("otherPlayerAtoms are: ", otherPlayerAtoms)
+                    # print("Click ", pos, "Grid coordinates: ", row, column)
+                    # print("thisPlayerAtoms are: ", thisPlayerAtoms)
+                    # print("otherPlayerAtoms are: ", otherPlayerAtoms)
                 else:
-                    print("DEBUG: before updating the grid, the grid is: ", grid)
+                    # print("DEBUG: before updating the grid, the grid is: ", grid)
                     thisPlayerAtoms.append(tuple([row, column]))
                     # Set that location to one
                     grid[row][column] = int(grid[row][column]) + 1
-                    print(grid)
-                    print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
-                    print("DEBUG: the updated grid before the algorithm was executed is: ", grid)
-                    print("1234")
+                    # print(grid)
+                    # print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
+                    # print("DEBUG: the updated grid before the algorithm was executed is: ", grid)
+                    # print("1234")
                     turn = turn + 1
                     checkForRowAndColumn(row, column, 1)
-                    print("DEBUG: The updated grid after the algorithm executed is, : ", grid)
-                    print("Click ", pos, "Grid coordinates: ", row, column)
-                    print("thisPlayerAtoms are: ", thisPlayerAtoms)
-                    print("otherPlayerAtoms are: ", otherPlayerAtoms)
+                    # print("DEBUG: The updated grid after the algorithm executed is, : ", grid)
+                    # print("Click ", pos, "Grid coordinates: ", row, column)
+                    # print("thisPlayerAtoms are: ", thisPlayerAtoms)
+                    # print("otherPlayerAtoms are: ", otherPlayerAtoms)
 
         #This is where I have to send the data
+        
+        
+
         screenUpdate()
         print("DEBUG: Works is : ", works)
 
@@ -660,13 +689,20 @@ while not done:
             ret = ssl_sock.recv(1024)
             if pickle.loads(ret) == 0:
                 print("Error")
+            
+            break
         
         else:
             print("User didn't click on the right cell")
 
-        
+
+    print("DEBUG: Got out of that while loop now in the inner while loop")
+
+    if(signal_move_prime[4] == 1 or signal_move_prime[4] == 2):
+        screen.quit()
 
     screen.fill(RED)
+
     c_turn=c_turn+1
 
     #Now Drawing it on the screen
@@ -677,8 +713,25 @@ while not done:
     # Limit to 60 frames per second
     clock.tick(60)
  
+    pygame.mouse.set_visible(False)
+
+
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
+
+    # if signal_move_prime[0] == 0:
+    #     screen.fill(RED)
+    #     screenUpdate()
+    #     pygame.display.flip()
+    #     #When it's not the player's turn
+    #     print("DEBUG: This is not my turn")
+    #     another_flag_here = 0
+    #     another_flag = ssl_sock.recv(1024)
+    #     another_flag_here = pickle.loads(another_flag)
+    #     print("DEBUG: Now i can play")
+    #     if another_flag_here == 1:
+    #         continue
+        
 
 
 

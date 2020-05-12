@@ -438,6 +438,7 @@ class player_game_room(Thread):
         try: 
             while True:
                 self.checkForWin(counter)
+                print("DEBUG: Both the players should get this")
                 print("Value of win_player is: \n", win_player)
                 if turn%2 == 1:
                     #New dictionary
@@ -451,6 +452,19 @@ class player_game_room(Thread):
                     signal_and_data[0] = 1
                     player1.send(pickle.dumps(signal_and_data))
                     print("Data sent to player 1\n")
+
+                    if self.win_check == 1 or self.win_check == 2:
+                        #Pasting the finally condition
+                        player1.close()
+                        player2.close()
+                        lock_buf.acquire()
+                        element1=connbuffer.pop(self.play1,"nf")
+                        element1=connbuffer.pop(self.play2,"nf")
+                        element2=userlist.pop(self.play1,"nf")
+                        element2=userlist.pop(self.play2,"nf")
+                        lock_buf.release()
+                        
+                        
 
                     recvdata = player1.recv(1024)
                     recv_data=pickle.loads(recvdata)
@@ -521,8 +535,9 @@ class player_game_room(Thread):
                     # player1.send(pickle.dumps(1))
                     #recvdata = player2.recv(1024)
                     #if pickle.loads(recvdata) ==1:
+                    #Here I have to send the data to player 2 to say that your waiting is over now
+                    # player2.send(pickle.dumps(1))
                 else:
-                    self.checkForWin(counter)
                     #New dictionary
                     signal_and_data = []
                     signal_and_data.append(0)
@@ -534,6 +549,7 @@ class player_game_room(Thread):
                     signal_and_data[0] = 1
                     player2.send(pickle.dumps(signal_and_data))
                     print("Data sent to player 2\n")
+
 
                     recvdata = player2.recv(1024)
                     recv_data=pickle.loads(recvdata)
@@ -602,6 +618,8 @@ class player_game_room(Thread):
                     # player2.send(recvdata)
                     #recvdata = player2.recv(1024)
                     #if pickle.loads(recvdata) ==1:
+                    #Sending the data to player 2 let it know that you can resume now
+                    # player1.send(pickle.dumps(1))
         finally:
             player1.close()
             player2.close()
