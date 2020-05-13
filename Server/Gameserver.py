@@ -5,7 +5,16 @@ import hashlib, os, binascii
 from threading import Thread, Lock
 import mysql.connector
 
+<<<<<<< HEAD
 mydb = mysql.connector.connect(host="localhost", user="root", passwd="root", database="gameserver")
+=======
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  passwd="",
+  database="gameserver"
+)
+>>>>>>> 80d5af1f5ac49226657060e839fa4c951914c814
 mycursor = mydb.cursor()
 ports = 60000
 namereg = re.compile("^[a-zA-Z0-9]{0,20}$")
@@ -358,15 +367,21 @@ class player_game_room(Thread):
             self.checkForTheFour(row, column, player_turn)
 
     def checkForWin(self, turn):
+
+        #Need to add the value of win in the database
+
         if len(self.playerOneAtoms) == 0 and turn > 2:
             #Player two won
             print("Player 2 won")
             self.win_check = 2
+            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
+
 
         elif len(self.playerTwoAtoms) == 0 and turn > 2:
             #player one won
             print("Player 1 won")
             self.win_check = 1
+            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
         
         else:
             print("The game is still going on")
@@ -452,10 +467,13 @@ class player_game_room(Thread):
         turn = 1
         try: 
             while True:
+                ok = 0
                 self.checkForWin(counter)
+                # print("DEBUG: Both the players should get this")
                 print("Value of win_player is: \n", win_player)
                 if turn%2 == 1:
                     #New dictionary
+                    print("DEBUG: My name is: ", str(player1))
                     signal_and_data = []
                     signal_and_data.append(0)
                     signal_and_data.append(self.playerTwoAtoms)
@@ -675,14 +693,19 @@ class player_game_room(Thread):
                     else:
                         print("It is incorrect")
                         flag=0
+                        ok = -1
                     
 
+                    print("DEBUG: Ok value is: ", ok)
+                    player1.send(pickle.dumps(ok))
+                    
                     #player1.send(pickle.dumps(flag))
                     # player1.send(pickle.dumps(1))
                     #recvdata = player2.recv(1024)
                     #if pickle.loads(recvdata) ==1:
+                    #Here I have to send the data to player 2 to say that your waiting is over now
+                    # player2.send(pickle.dumps(1))
                 else:
-                    self.checkForWin(counter)
                     #New dictionary
                     signal_and_data = []
                     signal_and_data.append(0)
@@ -891,12 +914,19 @@ class player_game_room(Thread):
                         print("It is correct")
                     else:
                         print("It is incorrect")
+<<<<<<< HEAD
                         flag = 0
+=======
+                        flag=0
+                        ok = -1
+>>>>>>> 80d5af1f5ac49226657060e839fa4c951914c814
                     #player2.send(pickle.dumps(flag))
                     # player2.send(pickle.dumps(1))
                     # player2.send(recvdata)
                     #recvdata = player2.recv(1024)
                     #if pickle.loads(recvdata) ==1:
+                    #Sending the data to player 2 let it know that you can resume now
+                    player2.send(pickle.dumps(ok))
         finally:
             print("Game has ended")
             

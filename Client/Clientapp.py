@@ -5,6 +5,7 @@ import sys
 import ssl
 import pprint
 import pygame
+from tkinter import * 
 from tkinter import messagebox 
 
 # Define some colors
@@ -42,37 +43,39 @@ regex=re.compile("^[a-zA-Z0-9]{0,20}$")
 regpass=re.compile("^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$")
 
 #We ask user for input and check if it satisfies regex
-userin=input("Press 1 to Log on , press to 2 login : ")
-if int(userin) == 1: 
-    print(userin)
-    logon_or_login="logon"
-    username=input("Give username : ")
-    print("Enter Logon Credentials")
-    while regex.match(username) is None:
-        username=input("Invalid input, please Re-Enter username : ")
+# userin=input("Press 1 to Log on , press to 2 login : ")
+# if int(userin) == 1: 
+#     print(userin)
+#     logon_or_login="logon"
+#     username=input("Give username : ")
+#     print("Enter Logon Credentials")
+#     while regex.match(username) is None:
+#         username=input("Invalid input, please Re-Enter username : ")
 
-    passw=input("Give password : ")
-    repassw=input("Re-enter password : ")
-    while regpass.match(passw) is None or passw!=repassw:
-        passw=input("Give password : ")
-        repassw=input("Re-enter password : ")
-else:
-    logon_or_login="login"
-    print("Enter Login Credentials")
-    username=input("Give username : ")
-    while regex.match(username) is None:
-        username=input("Invalid input, please Re-Enter username : ")
+#     passw=input("Give password : ")
+#     repassw=input("Re-enter password : ")
+#     while regpass.match(passw) is None or passw!=repassw:
+#         passw=input("Give password : ")
+#         repassw=input("Re-enter password : ")
+# else:
+#     logon_or_login="login"
+#     print("Enter Login Credentials")
+#     username=input("Give username : ")
+#     while regex.match(username) is None:
+#         username=input("Invalid input, please Re-Enter username : ")
 
-    passw=input("Give password : ")
-    while regpass.match(passw) is None:
-        passw=input("Give password : ")
+#     passw=input("Give password : ")
+#     while regpass.match(passw) is None:
+#         passw=input("Give password : ")
         
 
 
-
+data=""
 
 #Adding username, machine's ipaddress and the machine's name to a variable  b to send to server
-def connect_and_check_server(loginlogon,usern,pasw):
+def connect_and_check_server(params):
+    global data
+    (loginlogon,usern,pasw) = params
     b.append(loginlogon)
     b.append(usern)
     b.append(pasw)
@@ -124,22 +127,123 @@ def connect_and_check_server(loginlogon,usern,pasw):
     #username is already present 
     if data_temp == -1:
         print("Name is already there in database")
-        sys.exit(0)
+        alert_popup("Error...", "Name is already there in database",helloCallBack)
     elif data_temp == -2:
         print("Username or password or data sent is in incorrect format")
-        sys.exit(0)
+        alert_popup("Error...", "Username or password or data sent is in incorrect format",helloCallBack)
     elif data_temp== -3:
         print("Username is not there in database")
-        sys.exit(0)
+        alert_popup("Error...", "Username is not there in database",helloCallBack)
     elif data_temp== -4:
         print("Password is incorect")
-        sys.exit(0)
+        alert_popup("Error...", "Password is incorect",helloCallBack)
     else:
         print("You are connected successfully ")
+        alert_popup("Being connected...", "Game starts....",root.destroy)
+        print(data_temp)
+    data=data_temp
     return data_temp
+#######################################################
 
-data=connect_and_check_server(logon_or_login,username,passw)
-print(data)
+def connect_server_2():
+    global username,passw,logon_or_login
+    username = v.get() 
+    passw = t.get() 
+    alert_popup("test","You have been added to buffer ... ",connect_and_check_server,("logon",username,passw))
+
+def connect_server_1():
+    global username,passw,logon_or_login
+    username = v.get() 
+    passw = t.get()
+    alert_popup("test","You have been added to buffer ... ",connect_and_check_server,("login",username,passw))
+def helloCallBack():
+    
+    test=root.pack_slaves()
+    for i in test:
+        i.pack_forget()
+
+    def regChecker_1():
+        username=v.get()
+        password=t.get()
+        if not(regex.match(username) or regex.match(password)):
+            alert_popup("Chain reaction...","Regex not matched",helloCallBack)
+        else:
+            connect_server_1()
+    def regChecker_2():
+        username=v.get()
+        password=t.get()
+        if not(regex.match(username) or regex.match(password)):
+            alert_popup("Chain reaction...","Regex not matched",helloCallBack)
+        else:
+            connect_server_2()
+    
+    def login():
+        # alert_popup("Test1","Player Name : "+str(v.get())+"\nClick ok to start the game",connect_server)
+        test=root.pack_slaves()
+        for i in test:
+            i.pack_forget()
+
+        
+        l=Label(root, text="""Enter Player Name""",justify = LEFT,padx = 20)
+
+        v.pack()
+
+        t.pack()
+        Button(root, text="OK", command=regChecker_1 , width=200).pack()
+
+    def logon():
+        # alert_popup("Test1","Player Name : "+str(v.get())+"\nClick ok to start the game",connect_server)
+        test=root.pack_slaves()
+        for i in test:
+            i.pack_forget()
+        l=Label(root, text="""Enter Player Name""",justify = LEFT,padx = 20)
+        v.pack()
+        t.pack()
+        Button(root, text="Sign up", command=regChecker_2 , width=200).pack()
+    
+    Button(root, text="Sign Up", command=logon , width=200).pack()
+    Button(root, text="Sign In", command=login , width=200).pack()
+def alert_popup(title, message,func,params=None):
+   
+    """Generate a pop-up window for special messages."""
+    test=root.pack_slaves()
+    for i in test:
+        i.pack_forget()
+    root.title(title)
+    m = message
+    m += '\n'
+    w = Label(root, text=message, width=120, height=10)
+    w.pack()
+    if (params!=None):
+        b = Button(root, text="OK", command=func(params) , width=10)
+        b.config(width=200, height=200)
+
+    else:
+        b = Button(root, text="OK", command=func , width=10)
+        b.config(width=200, height=200)
+
+    b.pack()
+
+#modified
+root=Tk()
+v=Entry(root,justify = RIGHT)
+t=Entry(root,justify=RIGHT)
+w = 400     # popup window width
+h = 200     # popup window height
+sw = root.winfo_screenwidth()
+sh = root.winfo_screenheight()
+x = (sw - w)/2
+y = (sh - h)/2
+root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+alert_popup("Chain Reaction...", "Connecting to server",helloCallBack)
+
+root.mainloop()
+
+print("Username is " +username)
+
+#######################
+# data=connect_and_check_server(logon_or_login,username,passw)
+
 #Create a new client socket to create a connection with server on the server given port
 clientSocket = socket(AF_INET, SOCK_STREAM)
 try:
@@ -484,7 +588,7 @@ def screenUpdate():
 
     for row in range(10):
             for column in range(10):
-                color = WHITE
+                color = BLACK
 
                 pygame.draw.rect(screen,
                                 color,
@@ -513,7 +617,7 @@ def screenUpdate():
                                 HEIGHT])
 
 
-    print("DEBUG: Just filled in all the cells according to this client")
+    # print("DEBUG: Just filled in all the cells according to this client")
 
         #This is to update the screen according to player two
     for row in range(10):
@@ -536,7 +640,7 @@ def screenUpdate():
                                 WIDTH,
                                 HEIGHT])
 
-    print("Just filled in the cells with red according to Opponent's data")
+    # print("Just filled in the cells with red according to Opponent's data")
         
         # clock.tick(60)
 
@@ -551,16 +655,19 @@ while not done:
     event_sent = 0
     signal_move = 0
     data_for_move = ssl_sock.recv(1024)
-    print("DEBUG: size for data_for_move, " ,len(data_for_move))
-    print("DEBUG: value of data ", data_for_move)
+    # print("DEBUG: size for data_for_move, " ,len(data_for_move))
+    # print("DEBUG: value of data ", data_for_move)
     signal_move_prime = pickle.loads(data_for_move)
     # signal_move = signal_move_prime["signal"]
-    print("Signal recieved from Server", signal_move_prime)
+    print("Signal recieved from Server", signal_move_prime[0])
 
 
     clock.tick(60)
 
-    screen.fill(GREEN)
+    screen.fill(LIGHT_GREEN_2)
+
+    pygame.mouse.set_visible(True)
+
     
 
     otherPlayerAtoms = signal_move_prime[1]
@@ -575,22 +682,47 @@ while not done:
 
 
 
+    
+
+    # if signal_move_prime[0] == 0:
+    #     screen.fill(RED)
+    #     screenUpdate()
+    #     pygame.display.flip()
+    #     #When it's not the player's turn
+    #     print("DEBUG: This is not my turn")
+    #     another_flag_here = 0
+    #     another_flag = ssl_sock.recv(1024)
+    #     another_flag_here = pickle.loads(another_flag)
+    #     print("DEBUG: Now i can play")
+    #     if another_flag_here == 1:
+    #         continue
+
+    # print(type(signal_move_prime))
+
+    print("DEBUG: This is before checking win condition, both the player should get this, win valus is: ", signal_move_prime[4])
+
     if(signal_move_prime[4] == 1):
         #player 1 won
-        Tk().wm_withdraw() #to hide the main window
+        # Tk().wm_withdraw() #to hide the main window
         messagebox.showinfo('Player One Won','Player One Won')
         screen.quit()
 
     if(signal_move_prime[4] == 2):
-        #player 1 won
-        Tk().wm_withdraw() #to hide the main window
+        #player 2 won
+        # Tk().wm_withdraw() #to hide the main window
         messagebox.showinfo('Player Two Won','Player Two Won')
-        screen.quit() 
+        screen.quit()
 
-    # print(type(signal_move_prime))
+
+
+
     while signal_move_prime[0] == 1:
-        
 
+        print("DEBUG: Got back in, since player clicked on the wrong cell")
+
+        works = 0
+        
+        # print("DEBUG: This is where I am filling the screen green")
         screen.fill(GREEN)
         
 
@@ -608,7 +740,7 @@ while not done:
                     pos = pygame.mouse.get_pos()
                     flag=1
 
-        works = 0
+        
        
                
 
@@ -622,56 +754,71 @@ while not done:
             column = pos[0] // (WIDTH + MARGIN)
             row = pos[1] // (HEIGHT + MARGIN)
 
-            print("DEBUG: Row and Column acquired : ", row, " ", column)
+            if row >= 0 and row <=8 and column >=0 and column <= 8:
 
-            if (row, column) in otherPlayerAtoms:
-                print("You can't click there, Click again")
-                works = 1
-            else:
-                if (row, column) in thisPlayerAtoms:
-                    print("It is already in the block")   
-                    # Set that location to one
-                    grid[row][column] = int(grid[row][column]) + 1
-                    print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
-                    turn = turn + 1
-                    checkForRowAndColumn(row, column, 1)
-                    print("Click ", pos, "Grid coordinates: ", row, column)
-                    print("thisPlayerAtoms are: ", thisPlayerAtoms)
-                    print("otherPlayerAtoms are: ", otherPlayerAtoms)
+                print("DEBUG: Row and Column acquired : ", row, " ", column)
+
+                if (row, column) in otherPlayerAtoms:
+                    print("You can't click there, Click again")
+                    works = 1
                 else:
-                    print("DEBUG: before updating the grid, the grid is: ", grid)
-                    thisPlayerAtoms.append(tuple([row, column]))
-                    # Set that location to one
-                    grid[row][column] = int(grid[row][column]) + 1
-                    print(grid)
-                    print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
-                    print("DEBUG: the updated grid before the algorithm was executed is: ", grid)
-                    print("1234")
-                    turn = turn + 1
-                    checkForRowAndColumn(row, column, 1)
-                    print("DEBUG: The updated grid after the algorithm executed is, : ", grid)
-                    print("Click ", pos, "Grid coordinates: ", row, column)
-                    print("thisPlayerAtoms are: ", thisPlayerAtoms)
-                    print("otherPlayerAtoms are: ", otherPlayerAtoms)
+                    if (row, column) in thisPlayerAtoms:
+                        print("It is already in the block")   
+                        # Set that location to one
+                        grid[row][column] = int(grid[row][column]) + 1
+                        # print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
+                        turn = turn + 1
+                        checkForRowAndColumn(row, column, 1)
+                        # print("Click ", pos, "Grid coordinates: ", row, column)
+                        # print("thisPlayerAtoms are: ", thisPlayerAtoms)
+                        # print("otherPlayerAtoms are: ", otherPlayerAtoms)
+                    else:
+                        # print("DEBUG: before updating the grid, the grid is: ", grid)
+                        thisPlayerAtoms.append(tuple([row, column]))
+                        # Set that location to one
+                        grid[row][column] = int(grid[row][column]) + 1
+                        # print(grid)
+                        # print("DEBUG: only updated that particular cell, Value of row: ", row, " and column: ", column, " is: ", grid[row][column])
+                        # print("DEBUG: the updated grid before the algorithm was executed is: ", grid)
+                        # print("1234")
+                        turn = turn + 1
+                        checkForRowAndColumn(row, column, 1)
+                        # print("DEBUG: The updated grid after the algorithm executed is, : ", grid)
+                        # print("Click ", pos, "Grid coordinates: ", row, column)
+                        # print("thisPlayerAtoms are: ", thisPlayerAtoms)
+                        # print("otherPlayerAtoms are: ", otherPlayerAtoms)
 
-        #This is where I have to send the data
-        screenUpdate()
-        print("DEBUG: Works is : ", works)
+            #This is where I have to send the data
+            
+            
 
-        if works == 0:
-            print("DEBUG: User clicked on the right part")
-            signal_move_prime[0] = 0
-            sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
-            ret = ssl_sock.recv(1024)
-            if pickle.loads(ret) == 0:
-                print("Error")
-        
-        else:
-            print("User didn't click on the right cell")
+            screenUpdate()
+            print("DEBUG: Works is : ", works)
 
-        
+            if works == 0:
+                print("DEBUG: User clicked on the right part")
+                signal_move_prime[0] = 0
+                sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
+                ret = ssl_sock.recv(1024)
+                if pickle.loads(ret) == 0:
+                    print("Error")
+                
+                #First getting the ok signal from the server
+                another_flag = ssl_sock.recv(1024)
+                another_flag_here = pickle.loads(another_flag)
+                if(another_flag == -1):
+                    messagebox.showinfo("You have tampered with the data, OK")
+                break
+            
+            else:
+                print("User didn't click on the right cell")
+
+
+    print("DEBUG: Got out of that while loop now in the inner while loop")
+
 
     screen.fill(RED)
+
     c_turn=c_turn+1
 
     #Now Drawing it on the screen
@@ -682,8 +829,25 @@ while not done:
     # Limit to 60 frames per second
     clock.tick(60)
  
+    pygame.mouse.set_visible(False)
+
+
     # Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
+
+    # if signal_move_prime[0] == 0:
+    #     screen.fill(RED)
+    #     screenUpdate()
+    #     pygame.display.flip()
+    #     #When it's not the player's turn
+    #     print("DEBUG: This is not my turn")
+    #     another_flag_here = 0
+    #     another_flag = ssl_sock.recv(1024)
+    #     another_flag_here = pickle.loads(another_flag)
+    #     print("DEBUG: Now i can play")
+    #     if another_flag_here == 1:
+    #         continue
+        
 
 
 
