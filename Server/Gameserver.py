@@ -175,6 +175,8 @@ class player_game_room(Thread):
         self.play2=play2
         self.playerOneAtoms = []
         self.playerTwoAtoms = []
+        self.playerOneMoves = []
+        self.playerTwoMoves = []
         self.grid = [[0]*10]*10
         self.grid = [ ([0] * 10) for row in range(10)]
         self.win_check = 0
@@ -391,6 +393,9 @@ class player_game_room(Thread):
             loss_string = "UPDATE user SET loss = loss+1 WHERE name=\"" + self.play2+"\";"
             mycursor.execute(win_string)
             mycursor.execute(loss_string)
+            adding_move_string = "INSERT INTO games (player1,player2,move1,move2) VALUES (\""+self.play1+"\",\""+self.play2+"\",\""+str(self.playerOneMoves)+"\",\""+str(self.playerTwoMoves)+"\");"            
+            print(adding_move_string)
+            mycursor.execute(adding_move_string)
             mycursor.execute("commit;")
 
 
@@ -405,6 +410,9 @@ class player_game_room(Thread):
             loss_string = "UPDATE user SET loss = loss+1 WHERE name=\"" + self.play1+"\";"
             mycursor.execute(win_string)
             mycursor.execute(loss_string)
+            adding_move_string = "INSERT INTO games (player1,player2,move1,move2) VALUES (\""+self.play1+"\",\""+self.play2+"\",\""+str(self.playerOneMoves)+"\",\""+str(self.playerTwoMoves)+"\");"
+            print(adding_move_string)
+            mycursor.execute(adding_move_string)
             mycursor.execute("commit;")
 
         
@@ -682,6 +690,10 @@ class player_game_room(Thread):
 
                         column = recv_data[5]
                         row = recv_data[4]
+
+                        string_to_append = str(turn)+":("+str(column)+","+str(row)+")"
+
+                        self.playerOneMoves.append(string_to_append)
                         
                         print("DEBUG: row ",row," and column ", column, "were obtained")
 
@@ -912,6 +924,9 @@ class player_game_room(Thread):
 
                         column = recv_data[5]
                         row = recv_data[4]
+                        string_to_append = str(turn)+":("+str(column)+","+str(row)+")"
+
+                        self.playerTwoMoves.append(string_to_append)
 
                         print("DEBUG: Column ", column, " and Row ", row, "was recieved from player two")
 
