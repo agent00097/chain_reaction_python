@@ -75,7 +75,7 @@ def client_specific_server(portn, clientname,recon_flag):
         return
     try:
         connssl = ssl.wrap_socket(connect,server_side=True,certfile="server.crt", keyfile="server.key")
-        connssl.settimeout(300)
+        connssl.settimeout(60)
     except:
         connssl.close()
         return
@@ -384,14 +384,29 @@ class player_game_room(Thread):
             #Player two won
             print("Player 2 won")
             self.win_check = 2
-            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
+            player_name = self.play2
+            print("Player name is: ", self.play1)
+            mycursor.execute("use gameserver;")
+            win_string = "UPDATE user SET win = win+1 WHERE name=\"" + self.play1+"\";"
+            loss_string = "UPDATE user SET loss = loss+1 WHERE name=\"" + self.play2+"\";"
+            mycursor.execute(win_string)
+            mycursor.execute(loss_string)
+            mycursor.execute("commit;")
 
 
         elif len(self.playerTwoAtoms) == 0 and turn > 2:
             #player one won
             print("Player 1 won")
             self.win_check = 1
-            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
+            player_name = self.play1
+            print("Player name is: ", self.play2)
+            mycursor.execute("use gameserver;")
+            win_string = "UPDATE user SET win = win+1 WHERE name=\"" + self.play2+"\";"
+            loss_string = "UPDATE user SET loss = loss+1 WHERE name=\"" + self.play1+"\";"
+            mycursor.execute(win_string)
+            mycursor.execute(loss_string)
+            mycursor.execute("commit;")
+
         
         else:
             print("The game is still going on")
