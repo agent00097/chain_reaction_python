@@ -276,33 +276,21 @@ clock = pygame.time.Clock()
 
 #Sending some data to server (To tell server the new client connection is ready)
 data=pickle.dumps(1)
-<<<<<<< HEAD
 try:
     ssl_sock.send(data)
-    modifieddata = ssl_sock.recv(1024)
+    modifieddata = ssl_sock.recv(4096)
 except:
     print("Connection error while sending and recieving statistics")
     sys.exit(0)
-=======
-ssl_sock.send(data)
-modifieddata = ssl_sock.recv(4096)
->>>>>>> 6461254d8c3631321054f077a883247300f2b562
 data=pickle.loads(modifieddata) 
 for x in data:
     print(x)
 
-<<<<<<< HEAD
 try:
     modifieddata = ssl_sock.recv(1024)
 except:
     print("Connection error while recieving from server")
     sys.exit(0)
-=======
-
-
-
-modifieddata = ssl_sock.recv(1024)
->>>>>>> 6461254d8c3631321054f077a883247300f2b562
 data=pickle.loads(modifieddata)
 print(data)
 
