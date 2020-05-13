@@ -296,10 +296,12 @@ data=pickle.dumps(1)
 ssl_sock.send(data)
 modifieddata = ssl_sock.recv(4096)
 data=pickle.loads(modifieddata) 
-for x in data:
-    print(x)
+for ax in data:
+    print(ax)
 
-
+win_here = data[0]
+loss_here = data[1]
+moves = ax
 
 
 modifieddata = ssl_sock.recv(1024)
@@ -316,11 +318,12 @@ sw = root.winfo_screenwidth()
 sh = root.winfo_screenheight()
 x = (sw - w)/2
 y = (sh - h)/2
+stats="Wins - "+str(win_here)+ "\nLost - " +str(loss_here) + "\nMoves - "+str(ax)
 root.geometry('%dx%d+%d+%d' % (w, h, x, y))
-alert_popup("Your Statistics", str(x), root.destroy)
+alert_popup("Your Statistics", stats, root.destroy)
 
 root.mainloop()
-
+x=ax
 
 
 while data != "Ready":
