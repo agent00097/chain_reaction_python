@@ -165,6 +165,8 @@ class player_game_room(Thread):
         self.play2 = play2
         self.playerOneAtoms = []
         self.playerTwoAtoms = []
+        self.playerOneMoves = []
+        self.playerTwoMoves = []
         self.grid = [[0]*10]*10
         self.grid = [([0] * 10) for row in range(10)]
         self.win_check = 0
@@ -373,14 +375,35 @@ class player_game_room(Thread):
             #Player two won
             print("Player 2 won")
             self.win_check = 2
-            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
+            player_name = self.play2
+            print("Player name is: ", self.play1)
+            mycursor.execute("use gameserver;")
+            win_string = "UPDATE user SET win = win+1 WHERE name=\"" + self.play1+"\";"
+            loss_string = "UPDATE user SET loss = loss+1 WHERE name=\"" + self.play2+"\";"
+            mycursor.execute(win_string)
+            mycursor.execute(loss_string)
+            adding_move_string = "INSERT INTO games (player1,player2,move1,move2) VALUES (\""+self.play1+"\",\""+self.play2+"\",\""+str(self.playerOneMoves)+"\",\""+str(self.playerTwoMoves)+"\");"            
+            print(adding_move_string)
+            mycursor.execute(adding_move_string)
+            mycursor.execute("commit;")
 
 
         elif len(self.playerTwoAtoms) == 0 and turn > 2:
             #player one won
             print("Player 1 won")
             self.win_check = 1
-            mycursor.execute("UPDATE member_profile SET points = points + 1 WHERE user_id = """)
+            player_name = self.play1
+            print("Player name is: ", self.play2)
+            mycursor.execute("use gameserver;")
+            win_string = "UPDATE user SET win = win+1 WHERE name=\"" + self.play2+"\";"
+            loss_string = "UPDATE user SET loss = loss+1 WHERE name=\"" + self.play1+"\";"
+            mycursor.execute(win_string)
+            mycursor.execute(loss_string)
+            adding_move_string = "INSERT INTO games (player1,player2,move1,move2) VALUES (\""+self.play1+"\",\""+self.play2+"\",\""+str(self.playerOneMoves)+"\",\""+str(self.playerTwoMoves)+"\");"
+            print(adding_move_string)
+            mycursor.execute(adding_move_string)
+            mycursor.execute("commit;")
+
         
         else:
             print("The game is still going on")
@@ -654,6 +677,10 @@ class player_game_room(Thread):
                         print("DEBUG: Player 1 click on one of the cell")
                         column = recv_data[5]
                         row = recv_data[4]
+
+                        string_to_append = str(turn)+":("+str(column)+","+str(row)+")"
+
+                        self.playerOneMoves.append(string_to_append)
                         
                         print("DEBUG: row ", row, " and column ", column, "were obtained")
 
@@ -880,6 +907,10 @@ class player_game_room(Thread):
                         print("DEBUG: Inside Player 2:  Player 2 has clicked on a cell")
                         column = recv_data[5]
                         row = recv_data[4]
+                        string_to_append = str(turn)+":("+str(column)+","+str(row)+")"
+
+                        self.playerTwoMoves.append(string_to_append)
+
                         print("DEBUG: Column ", column, " and Row ", row, "was recieved from player two")
                         if (row, column) in self.playerOneAtoms:
                             print("You can't click there")
