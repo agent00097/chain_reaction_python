@@ -5,16 +5,15 @@ import hashlib, os, binascii
 from threading import Thread, Lock
 import mysql.connector
 
-<<<<<<< HEAD
-mydb = mysql.connector.connect(host="localhost", user="root", passwd="root", database="gameserver")
-=======
+
+
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  passwd="",
+  passwd="root",
   database="gameserver"
 )
->>>>>>> 80d5af1f5ac49226657060e839fa4c951914c814
+
 mycursor = mydb.cursor()
 ports = 60000
 namereg = re.compile("^[a-zA-Z0-9]{0,20}$")
@@ -603,7 +602,10 @@ class player_game_room(Thread):
                             winner = 2
                             break
 
-
+                    #for dos prevention, we quit game if data received is less than 10 bytes
+                    if len(recvdata) < 10:
+                        winner = 2
+                        break
 
                     recv_data = pickle.loads(recvdata)
                     print("Data recieved by Player 1\n")
@@ -828,7 +830,10 @@ class player_game_room(Thread):
                         if (tac-tic) >= 300 or not connected:
                             winner = 1
                             break
-
+                    #for dos prevention, drop game if packet is less than 10 bytes
+                    if len(recvdata) < 10:
+                        winner = 1
+                        break
                     recv_data = pickle.loads(recvdata)
                     print("Data recieved by Player 2\n")
                     print(recv_data)
@@ -914,12 +919,10 @@ class player_game_room(Thread):
                         print("It is correct")
                     else:
                         print("It is incorrect")
-<<<<<<< HEAD
+
                         flag = 0
-=======
-                        flag=0
                         ok = -1
->>>>>>> 80d5af1f5ac49226657060e839fa4c951914c814
+
                     #player2.send(pickle.dumps(flag))
                     # player2.send(pickle.dumps(1))
                     # player2.send(recvdata)
@@ -938,6 +941,10 @@ class player_game_room(Thread):
                 player2.close()
             except:
                 print("Error dropping connection")
+
+            occupied_ports.remove(userlist[self.play1][2])
+            occupied_ports.remove(userlist[self.play2][2])
+
             lock_buf.acquire()
             element1 = connbuffer.pop(self.play1, "nf")
             element1 = connbuffer.pop(self.play2, "nf")

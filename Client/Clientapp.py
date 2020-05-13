@@ -260,24 +260,41 @@ except:
 
 #Sending some data to server (To tell server the new client connection is ready)
 data=pickle.dumps(1)
-ssl_sock.send(data)
-modifieddata = ssl_sock.recv(1024)
+try:
+    ssl_sock.send(data)
+    modifieddata = ssl_sock.recv(1024)
+except:
+    print("Connection error while sending and recieving statistics")
+    sys.exit(0)
 data=pickle.loads(modifieddata) 
 for x in data:
     print(x)
 
-modifieddata = ssl_sock.recv(1024)
+try:
+    modifieddata = ssl_sock.recv(1024)
+except:
+    print("Connection error while recieving from server")
+    sys.exit(0)
 data=pickle.loads(modifieddata)
 print(data)
 
 
 while data != "Ready":
-    modifieddata = ssl_sock.recv(1024)
+    try:
+        modifieddata = ssl_sock.recv(1024)
+    except:
+        print("Connection error while recieving from server")
+        sys.exit(0)
     data=pickle.loads(modifieddata)
     print(data) 
 
 # server sends the other players's name
-modifieddata = ssl_sock.recv(1024)
+try:
+    modifieddata = ssl_sock.recv(1024)
+except:
+    print("Connection error while recieving oppponets name")
+    sys.exit(0)
+
 data=pickle.loads(modifieddata)
 print("Your opponentis : "+ str(data)) 
 
@@ -326,7 +343,11 @@ def sendDatatoServer(typeOfEvent, tPlayerAtoms, oPlayerAtoms, grid, row, column)
     print(my_data)
     data = pickle.dumps(my_data)
     # ssl_sock.send(data)
-    ssl_sock.send(data)
+    try:
+        ssl_sock.send(data)
+    except:
+        print("Connection has been dropped")
+        sys.exit(0)
 
 
 
@@ -579,8 +600,11 @@ def checkForTheFour(row, column, player_turn):
 
 
 
-
-data_for_first = ssl_sock.recv(1024)
+try:
+    data_for_first = ssl_sock.recv(1024)
+except:
+    print("Connection error while recieving who goes first")
+    sys.exit(0)
 first_data = pickle.loads(data_for_first)
 print("First="+first_data)
 
@@ -654,7 +678,11 @@ while not done:
 
     event_sent = 0
     signal_move = 0
-    data_for_move = ssl_sock.recv(1024)
+    try:
+        data_for_move = ssl_sock.recv(1024)
+    except:
+        print("Connection has been dropped")
+        sys.exit(0)
     # print("DEBUG: size for data_for_move, " ,len(data_for_move))
     # print("DEBUG: value of data ", data_for_move)
     signal_move_prime = pickle.loads(data_for_move)
@@ -668,8 +696,6 @@ while not done:
 
     pygame.mouse.set_visible(True)
 
-    
-
     otherPlayerAtoms = signal_move_prime[1]
     thisPlayerAtoms = signal_move_prime[3]
     grid = signal_move_prime[2]
@@ -679,10 +705,6 @@ while not done:
     c_turn = 0
 
     print("DEBUG: Player_win value is : ", signal_move_prime[4])
-
-
-
-    
 
     # if signal_move_prime[0] == 0:
     #     screen.fill(RED)
@@ -799,7 +821,11 @@ while not done:
                 print("DEBUG: User clicked on the right part")
                 signal_move_prime[0] = 0
                 sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
-                ret = ssl_sock.recv(1024)
+                try:
+                    ret = ssl_sock.recv(1024)
+                except:
+                    print("Connection has been dropped")
+                    sys.exit(0)
                 if pickle.loads(ret) == 0:
                     print("Error")
                 
