@@ -150,13 +150,13 @@ def connect_server_2():
     global username,passw,logon_or_login
     username = v.get() 
     passw = t.get() 
-    alert_popup("test","You have been added to buffer ... ",connect_and_check_server,("logon",username,passw))
+    alert_popup("Wait","You have been added to buffer ... ",connect_and_check_server,("logon",username,passw))
 
 def connect_server_1():
     global username,passw,logon_or_login
     username = v.get() 
     passw = t.get()
-    alert_popup("test","You have been added to buffer ... ",connect_and_check_server,("login",username,passw))
+    alert_popup("Wait","You have been added to buffer ... ",connect_and_check_server,("login",username,passw))
 def helloCallBack():
     
     test=root.pack_slaves()
@@ -186,25 +186,42 @@ def helloCallBack():
             i.pack_forget()
 
         
-        l=Label(root, text="""Enter Player Name""",justify = LEFT,padx = 20)
+        l=Label(root, text="""Enter Username and Password""",justify = "left",padx = 20)
+        l.pack(side= "top")
 
-        v.pack()
+        a = Label(root, text="Username",justify = "left")
+        b = Label(root, text="Password",justify = "left",padx = 10, )
 
-        t.pack()
-        Button(root, text="OK", command=regChecker_1 , width=200).pack()
+        a.pack(side = "left")
+
+        t.pack(side = "right")
+        b.pack(side = "left")
+
+        v.pack(side = "right")
+        Button(root, text="Log In", command=regChecker_1 , width=200).pack(side = "bottom")
 
     def logon():
         # alert_popup("Test1","Player Name : "+str(v.get())+"\nClick ok to start the game",connect_server)
         test=root.pack_slaves()
         for i in test:
             i.pack_forget()
-        l=Label(root, text="""Enter Player Name""",justify = LEFT,padx = 20)
-        v.pack()
-        t.pack()
-        Button(root, text="Sign up", command=regChecker_2 , width=200).pack()
+        l=Label(root, text="""Enter username and Password""",justify ="left",padx = 20)
+        l.pack(side= "top")
+
+        a = Label(root, text="Username",justify = "left")
+        b = Label(root, text="Password",justify = "left",padx = 10, )
+
+        a.pack(side = "left")
+
+        t.pack(side = "right")
+        b.pack(side = "left")
+
+        v.pack(side = "right")
+
+        Button(root, text="Sign Up", command=regChecker_2 , width=200).pack(side = "bottom")
     
     Button(root, text="Sign Up", command=logon , width=200).pack()
-    Button(root, text="Sign In", command=login , width=200).pack()
+    Button(root, text="Sign In", command=login , width=200).pack(side ="bottom")
 def alert_popup(title, message,func,params=None):
    
     """Generate a pop-up window for special messages."""
@@ -231,7 +248,7 @@ root=Tk()
 
 v=Entry(root,justify = RIGHT)
 t=Entry(root,justify=RIGHT)
-w = 400     # popup window width
+w = 600     # popup window width
 h = 200     # popup window height
 sw = root.winfo_screenwidth()
 sh = root.winfo_screenheight()
@@ -276,46 +293,47 @@ clock = pygame.time.Clock()
 
 #Sending some data to server (To tell server the new client connection is ready)
 data=pickle.dumps(1)
-try:
-    ssl_sock.send(data)
-    modifieddata = ssl_sock.recv(4096)
-except:
-    print("Connection error while sending and recieving statistics")
-    sys.exit(0)
+ssl_sock.send(data)
+modifieddata = ssl_sock.recv(4096)
 data=pickle.loads(modifieddata) 
 for x in data:
     print(x)
 
-try:
-    modifieddata = ssl_sock.recv(1024)
-except:
-    print("Connection error while recieving from server")
-    sys.exit(0)
+win_here = data[0]
+loss_here = data[1]
+moves = x
+
+
+modifieddata = ssl_sock.recv(1024)
 data=pickle.loads(modifieddata)
 print(data)
 
+root=Tk()
 
+v=Entry(root,justify = RIGHT)
+t=Entry(root,justify=RIGHT)
+w = 500     # popup window width
+h = 200     # popup window height
+sw = root.winfo_screenwidth()
+sh = root.winfo_screenheight()
+x = (sw - w)/2
+y = (sh - h)/2
+root.geometry('%dx%d+%d+%d' % (w, h, x, y))
+alert_popup("Your Statistics", str(win_here), root.destroy)
+
+root.mainloop()
 
 
 
 while data != "Ready":
-    try:
-        modifieddata = ssl_sock.recv(1024)
-    except:
-        print("Connection error while recieving from server")
-        sys.exit(0)
+    modifieddata = ssl_sock.recv(1024)
     data=pickle.loads(modifieddata)
     print(data) 
 
 # server sends the other players's name
-try:
-    modifieddata = ssl_sock.recv(1024)
-except:
-    print("Connection error while recieving oppponets name")
-    sys.exit(0)
-
+modifieddata = ssl_sock.recv(1024)
 data=pickle.loads(modifieddata)
-print("Your opponentis : "+ str(data)) 
+print("Your opponent is : "+ str(data)) 
 
 #After the connection is established, The game window will start
 #First thing we need to do is assign turns to the player
@@ -351,11 +369,7 @@ def sendDatatoServer(typeOfEvent, tPlayerAtoms, oPlayerAtoms, grid, row, column)
     print(my_data)
     data = pickle.dumps(my_data)
     # ssl_sock.send(data)
-    try:
-        ssl_sock.send(data)
-    except:
-        print("Connection has been dropped")
-        sys.exit(0)
+    ssl_sock.send(data)
 
 
 
@@ -608,11 +622,8 @@ def checkForTheFour(row, column, player_turn):
 
 
 
-try:
-    data_for_first = ssl_sock.recv(1024)
-except:
-    print("Connection error while recieving who goes first")
-    sys.exit(0)
+
+data_for_first = ssl_sock.recv(1024)
 first_data = pickle.loads(data_for_first)
 print("First="+first_data)
 
@@ -686,11 +697,7 @@ while not done:
 
     event_sent = 0
     signal_move = 0
-    try:
-        data_for_move = ssl_sock.recv(1024)
-    except:
-        print("Connection has been dropped")
-        sys.exit(0)
+    data_for_move = ssl_sock.recv(1024)
     # print("DEBUG: size for data_for_move, " ,len(data_for_move))
     # print("DEBUG: value of data ", data_for_move)
     signal_move_prime = pickle.loads(data_for_move)
@@ -704,6 +711,8 @@ while not done:
 
     pygame.mouse.set_visible(True)
 
+    
+
     otherPlayerAtoms = signal_move_prime[1]
     thisPlayerAtoms = signal_move_prime[3]
     grid = signal_move_prime[2]
@@ -713,6 +722,10 @@ while not done:
     c_turn = 0
 
     print("DEBUG: Player_win value is : ", signal_move_prime[4])
+
+
+
+    
 
     # if signal_move_prime[0] == 0:
     #     screen.fill(RED)
@@ -841,11 +854,7 @@ while not done:
                 print("DEBUG: User clicked on the right part")
                 signal_move_prime[0] = 0
                 sendDatatoServer(event_sent, thisPlayerAtoms, otherPlayerAtoms, grid, row, column)
-                try:
-                    ret = ssl_sock.recv(1024)
-                except:
-                    print("Connection has been dropped")
-                    sys.exit(0)
+                ret = ssl_sock.recv(1024)
                 if pickle.loads(ret) == 0:
                     print("Error")
                 
