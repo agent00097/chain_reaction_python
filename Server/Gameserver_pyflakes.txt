@@ -1,0 +1,5 @@
+Gameserver.py:78:9 local variable 'inputd' is assigned to but never used
+Gameserver.py:395:13 local variable 'player_name' is assigned to but never used
+Gameserver.py:895:33 local variable 'ele' is assigned to but never used
+Gameserver.py:901:29 local variable 'winner' is assigned to but never used
+Gameserver.py:954:25 local variable 'flag' is assigned to but never used

@@ -1,0 +1,36 @@
+Clientapp.py:3:1 'from socket import *' used; unable to detect undefined names
+Clientapp.py:8:1 'from tkinter import *' used; unable to detect undefined names
+Clientapp.py:82:14 'gethostbyname' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:82:28 'gethostname' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:83:14 'gethostname' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:91:20 'socket' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:91:27 'AF_INET' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:91:36 'SOCK_STREAM' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:189:11 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:192:13 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:193:13 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:201:9 'Button' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:208:11 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:211:13 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:212:13 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:221:9 'Button' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:223:5 'Button' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:224:5 'Button' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:234:9 'Label' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:237:13 'Button' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:241:13 'Button' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:247:6 'Tk' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:249:3 'Entry' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:249:24 'RIGHT' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:250:3 'Entry' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:250:22 'RIGHT' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:262:23 'username' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:268:16 'socket' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:268:23 'AF_INET' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:268:32 'SOCK_STREAM' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:311:6 'Tk' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:313:3 'Entry' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:313:24 'RIGHT' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:314:3 'Entry' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:314:22 'RIGHT' may be undefined, or defined from star imports: socket, tkinter
+Clientapp.py:585:9 local variable 'done' is assigned to but never used

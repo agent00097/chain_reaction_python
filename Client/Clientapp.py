@@ -190,7 +190,7 @@ def helloCallBack():
         l.pack(side= "top")
 
         a = Label(root, text="Username",justify = "left")
-        b = Label(root, text="Password",justify = "left",padx = 10, )
+        b = Label(root, text="Password",justify = "left",padx = 10)
 
         a.pack(side = "left")
 
@@ -247,7 +247,7 @@ def alert_popup(title, message,func,params=None):
 root=Tk()
 
 v=Entry(root,justify = RIGHT)
-t=Entry(root,justify=RIGHT)
+t=Entry(root,justify=RIGHT, show='*')
 w = 600     # popup window width
 h = 200     # popup window height
 sw = root.winfo_screenwidth()
@@ -296,12 +296,12 @@ data=pickle.dumps(1)
 ssl_sock.send(data)
 modifieddata = ssl_sock.recv(4096)
 data=pickle.loads(modifieddata) 
-for x in data:
-    print(x)
+for ax in data:
+    print(ax)
 
 win_here = data[0]
 loss_here = data[1]
-moves = x
+moves = ax
 
 
 modifieddata = ssl_sock.recv(1024)
@@ -318,11 +318,12 @@ sw = root.winfo_screenwidth()
 sh = root.winfo_screenheight()
 x = (sw - w)/2
 y = (sh - h)/2
+stats="Wins - "+str(win_here)+ "\nLost - " +str(loss_here) + "\nMoves - "+str(ax)
 root.geometry('%dx%d+%d+%d' % (w, h, x, y))
-alert_popup("Your Statistics", str(win_here), root.destroy)
+alert_popup("Your Statistics", stats, root.destroy)
 
 root.mainloop()
-
+x=ax
 
 
 while data != "Ready":
@@ -747,25 +748,27 @@ while not done:
     if(signal_move_prime[4] == 1):
         #player 1 won
         # Tk().wm_withdraw() #to hide the main window
-        screen.fill(WHITE)
-        pygame.display.flip()
-        text = font.render('Player One Won', True, GREEN, WHITE) 
-        textRect = text.get_rect()  
-        textRect.center = (400 // 2, 400 // 2) 
-        screen.blit(text, textRect)
-        pygame.display.flip()
+        # screen.fill(WHITE)
+        # pygame.display.flip()
+        # text = font.render('Player One Won', True, GREEN, WHITE) 
+        # textRect = text.get_rect()  
+        # textRect.center = (400 // 2, 400 // 2) 
+        # screen.blit(text, textRect)
+        # pygame.display.flip()
+        messagebox.showinfo('Player One Won','Player One Won')
         screen.quit()
 
     if(signal_move_prime[4] == 2):
         #player 2 won
         # Tk().wm_withdraw() #to hide the main window
-        screen.fill(WHITE)
-        pygame.display.flip()
-        text = font.render('Player Two Won', True, GREEN, WHITE) 
-        textRect = text.get_rect()  
-        textRect.center = (200 // 2, 200 // 2) 
-        screen.blit(text, textRect)
-        pygame.display.flip()
+        # screen.fill(WHITE)
+        # pygame.display.flip()
+        # text = font.render('Player Two Won', True, GREEN, WHITE) 
+        # textRect = text.get_rect()  
+        # textRect.center = (200 // 2, 200 // 2) 
+        # screen.blit(text, textRect)
+        # pygame.display.flip()
+        messagebox.showinfo('Player One Won','Player One Won')
         screen.quit()
 
 
